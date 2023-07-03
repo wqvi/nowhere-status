@@ -12,17 +12,18 @@
 #define NOWHERE_TXTSIZ 32
 #endif
 
+struct nowhere_config {
+	int offline;
+	int zone;
+	char ifname[16];
+	char location[16];
+};
+
 struct nowhere_color {
 	unsigned char r;
 	unsigned char g;
 	unsigned char b;
 	char _unused;
-};
-
-enum nowhere_usage {
-	NOWHERE_DEFAULT = 0x1,
-	NOWHERE_ALT = 0x2,
-	NOWHERE_DISABLED = 0x4
 };
 
 struct nowhere_node {
@@ -39,9 +40,10 @@ struct nowhere_swaybar {
 	int epollfd;
 	nowhere_map_t map;
 	CURL *curl;
+	struct nowhere_config config;
 };
 
-int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar);
+int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config);
 
 int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar);
 

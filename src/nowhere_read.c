@@ -14,13 +14,18 @@ int nowhere_read(char **_buffer, size_t _size, const char *_file) {
 	long size = ftell(fp);
 	rewind(fp);
 
+	if (_size < size) {
+		fclose(fp);
+		return -1;
+	}
+
 	printf("%ld\n", size);
 
 	char *ptr = malloc(size);
-	fread(ptr, sizeof(char), size, fp);
+	int rc = fread(ptr, sizeof(char), size, fp);
 	fclose(fp);
 	*_buffer = ptr;
-	return 0;
+	return rc < 0;
 }
 
 int nowhere_device_read(char *_buffer, size_t _size, const char *_file) {

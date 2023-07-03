@@ -9,7 +9,7 @@ int nowhere_weather(struct nowhere_node *_node, CURL *curl, char *_buffer) {
 
 	snprintf(_node->name, NOWHERE_NAMSIZ, "weather");
 	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%s", _buffer);
-	snprintf(_node->alt_text, NOWHERE_TXTSIZ, "Weather %ld", time(NULL));
+	_node->alt_text[0] = '\0';
 	_node->color._unused = 0;
 
 	return 0;

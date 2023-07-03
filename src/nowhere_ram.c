@@ -41,7 +41,7 @@ int nowhere_ram(struct nowhere_node *_node) {
 	snprintf(_node->name, NOWHERE_NAMSIZ, "ram");
 	long double memused = (memtotal - memfree - buffers - cached) / gb;
 	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%.1LfGb/%.1LfGb", memused, memtotal / gb);
-	snprintf(_node->alt_text, NOWHERE_TXTSIZ, "ram alt");
+	_node->alt_text[0] = '\0';
 	_node->color._unused = 0;
 
 	return 0;

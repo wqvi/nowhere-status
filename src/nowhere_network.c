@@ -47,7 +47,7 @@ int nowhere_network(struct nowhere_node *_node, const char *_ifname) {
 
 	snprintf(_node->name, NOWHERE_NAMSIZ, "wireless");
 	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%s %s", _ifname, addr);
-	snprintf(_node->alt_text, NOWHERE_TXTSIZ, "wireless alt");
+	_node->alt_text[0] = '\0';
 	_node->color._unused = 0;
 
 	close(fd);
