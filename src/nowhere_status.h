@@ -1,7 +1,12 @@
 #ifndef NOWHERE_STATUS_H
 #define NOWHERE_STATUS_H
 
-int nowhere_battery();
+struct nowhere_bat_info {
+	int capacity;
+	int status;
+};
+
+int nowhere_battery(struct nowhere_bat_info *_bat);
 
 int nowhere_date();
 

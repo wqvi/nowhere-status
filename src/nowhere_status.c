@@ -63,8 +63,10 @@ int main(int argc, char **argv) {
 		nowhere_network("wlan0");
 		nowhere_ram();
 		nowhere_temperature(0);
-		nowhere_battery();
+		struct nowhere_bat_info bat;
+		nowhere_battery(&bat);
 		nowhere_date();
+
 
 		printf("],\r");
 		fflush(stdout);
