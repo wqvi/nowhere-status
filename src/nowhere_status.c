@@ -59,8 +59,8 @@ static int nowhere_parse_args(int argc, char **argv) {
 	return 0;
 }
 
-static void nowhere_blit(char *blk1, char *blk2) {
-	printf(",[%s%s]\n", blk1, blk2);
+static void nowhere_blit(char *blk1) {
+	printf(",[%s]\n", blk1);
 	fflush(stdout);
 }
 
@@ -71,7 +71,8 @@ int main(int argc, char **argv) {
 
 
 	struct timespec now;
-	clock_gettime(CLOCK_REALTIME, &now);
+	if (clock_gettime(CLOCK_REALTIME, &now) == -1)
+		return EXIT_FAILURE;
 
 	struct itimerspec timerspec = {
 		.it_interval = {
@@ -85,11 +86,20 @@ int main(int argc, char **argv) {
 	};
 	
 	int timerfd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC | TFD_NONBLOCK);
+	if (timerfd == -1)
+		return EXIT_FAILURE;
 
-	timerfd_settime(timerfd, TFD_TIMER_ABSTIME, &timerspec, NULL);
+	if (timerfd_settime(timerfd, TFD_TIMER_ABSTIME, &timerspec, NULL) == -1) {
+		close(timerfd);
+		return EXIT_FAILURE;
+	}
 
 	int epollfd = epoll_create1(EPOLL_CLOEXEC);
-	
+	if (epollfd == -1) {
+		close(timerfd);
+		return EXIT_FAILURE;
+	}
+
 	struct epoll_event event = {
 		.events = EPOLLIN | EPOLLET,
 		.data = {
@@ -97,58 +107,31 @@ int main(int argc, char **argv) {
 		}
 	};
 
-	struct epoll_event stdin_event = {
-		.events = EPOLLIN | EPOLLET,
-		.data = {
-			.fd = STDIN_FILENO
-		}
-	};
-
-	int flags = fcntl(STDIN_FILENO, F_GETFD);
-	fcntl(STDIN_FILENO, F_SETFD, flags | O_NONBLOCK);
-
-	struct epoll_event events[2];
+	struct epoll_event events[1];
 
 	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, timerfd, &event) != 0) {
-		perror("epoll_ctl");
-		return -1;
+		close(timerfd);
+		close(epollfd);
+		return EXIT_FAILURE;
 	}
 
-	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, STDIN_FILENO, &stdin_event) != 0) {
-		perror("epoll_ctl");
-		return -1;
-	}
-
-	printf("{\"version\":1,\"click_events\":true}\n[[]\n");
+	fprintf(stdout, "{\"version\":1,\"click_events\":true}\n[[]\n");
 	fflush(stdout);
-	fflush(stdin);
-	char blk1[512] = "{\"full_text\":\"blk1\"},";
-	char blk2[512] = "{\"full_text\":\"blk2\"},";
 	for (;;) {
-		int num = epoll_wait(epollfd, events, 2, -1);
+		int num = epoll_wait(epollfd, events, 1, -1);
 		for (int i = 0; i < num; i++) {
 			struct epoll_event *e = &events[i];
 			if (e->data.fd == timerfd) {
 				uint64_t exp;
-				read(timerfd, &exp, sizeof(uint64_t));
-				snprintf(blk1, 512, "{\"full_text\":\"timerfd %ld\"},", exp);
-			} else if (e->data.fd == STDIN_FILENO) {
-				char buffer[BUFSIZ];
-				read(STDIN_FILENO, buffer, BUFSIZ);
-				snprintf(blk2, 512, "{\"color\":\"#FF0000\",\"full_text\":\"blk2\"},");
+				if (read(timerfd, &exp, sizeof(uint64_t)) == 0) {
+					close(timerfd);
+					close(epollfd);
+					return -1;
+				}
 			}
 		}
 
-		nowhere_blit(blk1, blk2);
-		snprintf(blk2, 512, "{\"full_text\":\"blk2\"},");
-	}
-
-	close(epollfd);
-	close(timerfd);
-
-	/*while (!nowhere_terminate) {
-		printf("[");
-		
+		fprintf(stdout, ",[");
 		struct nowhere_network_info net = {
 			.ifname = "wlan0"
 		};
@@ -158,14 +141,11 @@ int main(int argc, char **argv) {
 		struct nowhere_battery_info bat;
 		nowhere_battery(&bat);
 		nowhere_date();
+		fprintf(stdout, "]\n");
+	}
 
-		printf("],\r");
-		fflush(stdout);
+	close(epollfd);
+	close(timerfd);
 
-		// rudimentary way of updating every minute
-		// it should update based on the block status
-		sleep(60);
-	}*/
-
-	return 0;
+	return EXIT_SUCCESS; 
 }
