@@ -1,6 +1,7 @@
 #ifndef NOWHERE_SWAYBAR_H
 #define NOWHERE_SWAYBAR_H
 
+#include <curl/curl.h>
 #include "nowhere_map.h"
 
 #ifndef NOWHERE_NAMSIZ
@@ -34,8 +35,10 @@ struct nowhere_node {
 
 struct nowhere_swaybar {
 	int timerfd;
+	int weatherfd;
 	int epollfd;
 	nowhere_map_t map;
+	CURL *curl;
 };
 
 int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar);
