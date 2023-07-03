@@ -9,6 +9,7 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#include <poll.h>
 #include <sys/epoll.h>
 #include <sys/timerfd.h>
 
@@ -126,10 +127,22 @@ int main(int argc, char **argv) {
 			}
 		}
 
+		struct pollfd pfds = {
+			.fd = STDIN_FILENO,
+			.events = POLLIN
+		};
+
+		poll(&pfds, 1, 10);
+
 		fprintf(stdout, ",[");
 		struct nowhere_network_info net = {
 			.ifname = "wlan0"
 		};
+		if (pfds.revents & POLLIN) {
+			char buffer[BUFSIZ];
+			read(pfds.fd, buffer, BUFSIZ);
+			fprintf(stdout, "{\"full_text\":\"I am stdin %c %c\"},", buffer[0], buffer[1]);
+		}
 		nowhere_network(&net);
 		nowhere_ram();
 		nowhere_temperature(0);
