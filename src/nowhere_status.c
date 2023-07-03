@@ -65,7 +65,10 @@ int main(int argc, char **argv) {
 		return code;
 
 
-	struct timespec now;
+	struct nowhere_swaybar swaybar;
+	if (nowhere_swaybar_create(&swaybar) == -1) return EXIT_FAILURE;
+
+	/*struct timespec now;
 	if (clock_gettime(CLOCK_REALTIME, &now) == -1)
 		return EXIT_FAILURE;
 
@@ -121,28 +124,29 @@ int main(int argc, char **argv) {
 		close(timerfd);
 		close(epollfd);
 		return EXIT_FAILURE;
-	}
-	
+	} */
+
+	struct epoll_event events[2];
 	fprintf(stdout, "{\"version\":1,\"click_events\":true}\n[[]\n");
 	fflush(stdout);
 	for (;;) {
 		fprintf(stdout, ",[");
-		int num = epoll_wait(epollfd, events, 2, -1);
+		int num = epoll_wait(swaybar.epollfd, events, 2, -1);
 		for (int i = 0; i < num; i++) {
 			struct epoll_event *e = &events[i];
 			if (e->data.fd == STDIN_FILENO) {
 				char buffer[BUFSIZ];
 				if (read(STDIN_FILENO, buffer, BUFSIZ) == 0) {
-					close(timerfd);
-					close(epollfd);
+					close(swaybar.timerfd);
+					close(swaybar.epollfd);
 					return -1;
 				}
 				fprintf(stdout, "{\"full_text\":\"I am stdin\"},");
-			} else if (e->data.fd == timerfd) {
+			} else if (e->data.fd == swaybar.timerfd) {
 				uint64_t exp;
-				if (read(timerfd, &exp, sizeof(uint64_t)) == 0) {
-					close(timerfd);
-					close(epollfd);
+				if (read(swaybar.timerfd, &exp, sizeof(uint64_t)) == 0) {
+					close(swaybar.timerfd);
+					close(swaybar.epollfd);
 					return -1;
 				}
 			}
@@ -161,8 +165,8 @@ int main(int argc, char **argv) {
 		fflush(stdout);
 	}
 
-	close(epollfd);
-	close(timerfd);
+	close(swaybar.epollfd);
+	close(swaybar.timerfd);
 
 	return EXIT_SUCCESS; 
 }

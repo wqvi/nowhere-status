@@ -11,6 +11,18 @@ struct nowhere_network_info {
 	char addr[16];
 };
 
+struct nowhere_block {
+	struct nowhere_block *next;
+};
+
+struct nowhere_swaybar {
+	int timerfd;
+	int epollfd;
+	struct nowhere_block *head;
+};
+
+int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar);
+
 int nowhere_battery(struct nowhere_battery_info *_bat);
 
 int nowhere_date();
