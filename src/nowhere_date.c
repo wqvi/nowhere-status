@@ -11,7 +11,7 @@ int nowhere_date() {
 	char date[24];
 	strftime(date, 24, "%F %R", tm);
 
-	printf("{\"name\":\"date\",\"full_text\":\"%s\"},", date);
+	fprintf(stdout, "{\"name\":\"date\",\"full_text\":\"%s\"}", date);
 
 	return 0;
 }
