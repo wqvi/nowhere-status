@@ -1,4 +1,4 @@
-BIN := status_callback
+BIN := nowhere-status
 
 CFLAGS = -O2 -pedantic -Wall -Wextra -Wno-sign-compare -std=gnu99
 LIBS = -lcurl -lm
