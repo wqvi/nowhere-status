@@ -23,7 +23,7 @@ struct nowhere_swaybar {
 
 int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar);
 
-int nowhere_swaybar_poll(struct nowhere_swaybar *_swaybar);
+int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar);
 
 void nowhere_swaybar_destroy(struct nowhere_swaybar *_swaybar);
 

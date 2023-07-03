@@ -60,7 +60,7 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar) {
 	return 0;
 }
 
-int nowhere_swaybar_poll(struct nowhere_swaybar *_swaybar) {
+int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 	if (!_swaybar) return -1;
 
 	struct epoll_event events[2];
