@@ -45,9 +45,9 @@ int nowhere_network(struct nowhere_node *_node, const char *_ifname) {
 	struct sockaddr_in *in = (struct sockaddr_in *)&rq.u.ap_addr;
 	inet_ntop(AF_INET, &in->sin_addr, addr, INET_ADDRSTRLEN);
 
-	snprintf(_node->name, 16, "wireless");
-	snprintf(_node->full_text, 32, "%s %s", _ifname, addr);
-	snprintf(_node->alt_text, 16, "wireless alt");
+	snprintf(_node->name, NOWHERE_NAMSIZ, "wireless");
+	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%s %s", _ifname, addr);
+	snprintf(_node->alt_text, NOWHERE_TXTSIZ, "wireless alt");
 	_node->color._unused = 0;
 
 	close(fd);

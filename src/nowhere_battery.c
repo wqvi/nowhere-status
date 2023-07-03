@@ -1,15 +1,11 @@
+#include <math.h>
+#include "nowhere_read.h"
 #include "nowhere_status.h"
-
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <time.h>
-
-#include "nowhere_read.h"
+#include <sys/stat.h>
+#include <unistd.h>
 
 #ifndef BAT0
 #define BAT0 "/sys/class/power_supply/BAT0/"
