@@ -10,8 +10,10 @@ int nowhere_date(struct nowhere_node *_node) {
 	snprintf(_node->name, 16, "date");
 	// ISO Date format, 24 hours
 	// YYYY-MM-DD HH:MM
-	char date[24];
-	strftime(_node->full_text, 24, "%F %R", tm);
+	strftime(_node->full_text, NOWHERE_TXTSIZ, "%F %R", tm);
+	// ISO Date format, 12 hours
+	// YYYY-MM-DD HH:MM AM/PM
+	strftime(_node->alt_text, NOWHERE_TXTSIZ, "%F %I:%M %p", tm);
 	_node->color._unused = 0;
 
 	return 0;

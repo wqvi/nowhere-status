@@ -7,16 +7,6 @@
 #include <sys/timerfd.h>
 #include <unistd.h>
 
-static void nowhere_print_node(struct nowhere_node *_node) {
-	printf("{");
-	printf("\"name\":\"%s\",", _node->name);
-	if (_node->color._unused) {
-		printf("\"color\":\"#%02x%02x%02x\",", _node->color.r, _node->color.g, _node->color.b);
-	}
-	printf("\"full_text\":\"%s\"", _node->full_text);
-	printf("}");
-}
-
 int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar) {
 	if (!_swaybar) return -1;
 
@@ -24,7 +14,7 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar) {
 	if (clock_gettime(CLOCK_REALTIME, &now) == -1) return -1;
 
 	struct itimerspec timerspec = {
-		.it_interval = { .tv_sec = 5, .tv_nsec = 0 },
+		.it_interval = { .tv_sec = 60, .tv_nsec = 0 },
 		.it_value = { .tv_sec = now.tv_sec, .tv_nsec = 0 }
 	};
 
@@ -56,7 +46,7 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar) {
 
 	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, timerfd, &timer_event) < 0) goto error;
 	
-	if (nowhere_map_create(&_swaybar->map, 8, NOWHERE_ALIGN(sizeof(struct nowhere_node), 64)) == -1) goto error;
+	if (nowhere_map_create(&_swaybar->map, 5) == -1) goto error;
 
 	_swaybar->timerfd = timerfd;
 	_swaybar->epollfd = epollfd;
@@ -74,7 +64,6 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 	struct epoll_event events[2];
 	puts("{\"version\":1,\"click_events\":true}\n[[]");
 	for (;;) {
-		printf(",[");
 		int avail = epoll_wait(_swaybar->epollfd, events, 2, -1);
 		for (int i = 0; i < avail; i++) {
 			struct epoll_event *event = &events[i];
@@ -98,7 +87,12 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 						}
 					}
 				} while ((line = strtok(NULL, "\n")));
-				printf("{\"name\":\"stdin_debug\",\"full_text\":\"stdin debug %s\"},", name);
+				if (strcmp(name, "UNK") != 0) {
+					struct nowhere_node *node = nowhere_map_get(_swaybar->map, name);
+					if (node) {
+						node->alt = !node->alt;
+					}
+				}
 			} else if (event->data.fd == _swaybar->timerfd) {
 				uint64_t exp;
 				if (read(_swaybar->timerfd, &exp, sizeof(uint64_t)) < 0) return -1;
@@ -106,28 +100,23 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 		}
 		
 		struct nowhere_node node;
-
+		
 		nowhere_network(&node, "wlan0");
-		nowhere_print_node(&node);
-		printf(",");
+		nowhere_map_put(_swaybar->map, &node);
 
 		nowhere_ram(&node);
-		nowhere_print_node(&node);
-		printf(",");
+		nowhere_map_put(_swaybar->map, &node);
 		
 		nowhere_temperature(&node, 0);
-		nowhere_print_node(&node);
-		printf(",");
+		nowhere_map_put(_swaybar->map, &node);
 		
 		nowhere_battery(&node);
-		nowhere_print_node(&node);
-		printf(",");
+		nowhere_map_put(_swaybar->map, &node);
 		
 		nowhere_date(&node);
-		nowhere_print_node(&node);
+		nowhere_map_put(_swaybar->map, &node);
 
-		printf("]\n");
-		fflush(stdout);
+		nowhere_map_print(_swaybar->map);
 	}
 }
 

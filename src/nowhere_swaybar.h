@@ -3,6 +3,14 @@
 
 #include "nowhere_map.h"
 
+#ifndef NOWHERE_NAMSIZ
+#define NOWHERE_NAMSIZ 16
+#endif
+
+#ifndef NOWHERE_TXTSIZ
+#define NOWHERE_TXTSIZ 32
+#endif
+
 struct nowhere_color {
 	unsigned char r;
 	unsigned char g;
@@ -10,10 +18,18 @@ struct nowhere_color {
 	char _unused;
 };
 
+enum nowhere_alt {
+	NOWHERE_DEFAULT = 0x0,
+	NOWHERE_ALT = 0x2,
+	NOWHERE_DISABLED = 0x4
+};
+
 struct nowhere_node {
-	char name[16];
-	char full_text[48];
+	char name[NOWHERE_NAMSIZ];
+	char full_text[NOWHERE_TXTSIZ];
+	char alt_text[NOWHERE_TXTSIZ];
 	struct nowhere_color color;
+	int alt;
 };
 
 struct nowhere_swaybar {
