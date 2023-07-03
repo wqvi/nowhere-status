@@ -67,106 +67,13 @@ int main(int argc, char **argv) {
 
 	struct nowhere_swaybar swaybar;
 	if (nowhere_swaybar_create(&swaybar) == -1) return EXIT_FAILURE;
-
-	/*struct timespec now;
-	if (clock_gettime(CLOCK_REALTIME, &now) == -1)
-		return EXIT_FAILURE;
-
-	struct itimerspec timerspec = {
-		.it_interval = {
-			.tv_sec = 5, 
-			.tv_nsec = 0 
-		},
-		.it_value = {
-			.tv_sec = now.tv_sec,
-			.tv_nsec = 0
-		}
-	};
 	
-	int timerfd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC | TFD_NONBLOCK);
-	if (timerfd == -1)
-		return EXIT_FAILURE;
-
-	if (timerfd_settime(timerfd, TFD_TIMER_ABSTIME, &timerspec, NULL) == -1) {
-		close(timerfd);
+	if (nowhere_swaybar_poll(&swaybar) == -1) {
+		nowhere_swaybar_destroy(&swaybar);
 		return EXIT_FAILURE;
 	}
 
-	int epollfd = epoll_create1(EPOLL_CLOEXEC);
-	if (epollfd == -1) {
-		close(timerfd);
-		return EXIT_FAILURE;
-	}
-
-	struct epoll_event stdin_event = {
-		.events = EPOLLIN,
-		.data = {
-			.fd = STDIN_FILENO
-		}
-	};
-
-	struct epoll_event event = {
-		.events = EPOLLIN | EPOLLET,
-		.data = {
-			.fd = timerfd
-		}
-	};
-
-	struct epoll_event events[2];
-
-	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, STDIN_FILENO, &stdin_event) < 0) {
-		close(timerfd);
-		close(epollfd);
-		return EXIT_FAILURE;
-	}
-
-	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, timerfd, &event) < 0) {
-		close(timerfd);
-		close(epollfd);
-		return EXIT_FAILURE;
-	} */
-
-	struct epoll_event events[2];
-	fprintf(stdout, "{\"version\":1,\"click_events\":true}\n[[]\n");
-	fflush(stdout);
-	for (;;) {
-		fprintf(stdout, ",[");
-		int num = epoll_wait(swaybar.epollfd, events, 2, -1);
-		for (int i = 0; i < num; i++) {
-			struct epoll_event *e = &events[i];
-			if (e->data.fd == STDIN_FILENO) {
-				char buffer[BUFSIZ];
-				if (read(STDIN_FILENO, buffer, BUFSIZ) == 0) {
-					close(swaybar.timerfd);
-					close(swaybar.epollfd);
-					return -1;
-				}
-				fprintf(stdout, "{\"full_text\":\"I am stdin\"},");
-			} else if (e->data.fd == swaybar.timerfd) {
-				uint64_t exp;
-				if (read(swaybar.timerfd, &exp, sizeof(uint64_t)) == 0) {
-					close(swaybar.timerfd);
-					close(swaybar.epollfd);
-					return -1;
-				}
-			}
-		}
-
-		struct nowhere_network_info net = {
-			.ifname = "wlan0"
-		};
-		nowhere_network(&net);
-		nowhere_ram();
-		nowhere_temperature(0);
-		struct nowhere_battery_info bat;
-		nowhere_battery(&bat);
-		nowhere_date();
-		fprintf(stdout, "]\n");
-		fflush(stdout);
-	}
-
-	close(swaybar.epollfd);
-	close(swaybar.timerfd);
+	nowhere_swaybar_destroy(&swaybar);
 
 	return EXIT_SUCCESS; 
 }
