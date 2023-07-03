@@ -46,7 +46,7 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar) {
 
 	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, timerfd, &timer_event) < 0) goto error;
 	
-	if (nowhere_map_create(&_swaybar->map, 5) == -1) goto error;
+	if (nowhere_map_create(&_swaybar->map, 6) == -1) goto error;
 
 	_swaybar->timerfd = timerfd;
 	_swaybar->epollfd = epollfd;
@@ -90,7 +90,7 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 				if (strcmp(name, "UNK") != 0) {
 					struct nowhere_node *node = nowhere_map_get(_swaybar->map, name);
 					if (node) {
-						node->alt = !node->alt;
+						node->usage = !node->usage;
 					}
 				}
 			} else if (event->data.fd == _swaybar->timerfd) {
@@ -99,22 +99,25 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 			}
 		}
 		
-		struct nowhere_node node;
+		struct nowhere_node cache;
 		
-		nowhere_network(&node, "wlan0");
-		nowhere_map_put(_swaybar->map, &node);
+		nowhere_network(&cache, "wlan0");
+		nowhere_map_put(_swaybar->map, &cache);
 
-		nowhere_ram(&node);
-		nowhere_map_put(_swaybar->map, &node);
+		nowhere_ram(&cache);
+		nowhere_map_put(_swaybar->map, &cache);
 		
-		nowhere_temperature(&node, 0);
-		nowhere_map_put(_swaybar->map, &node);
+		nowhere_temperature(&cache, 0);
+		nowhere_map_put(_swaybar->map, &cache);
 		
-		nowhere_battery(&node);
-		nowhere_map_put(_swaybar->map, &node);
+		nowhere_battery(&cache);
+		nowhere_map_put(_swaybar->map, &cache);
 		
-		nowhere_date(&node);
-		nowhere_map_put(_swaybar->map, &node);
+		nowhere_date(&cache);
+		nowhere_map_put(_swaybar->map, &cache);
+
+		//nowhere_weather(&cache);
+		//nowhere_map_put(_swaybar->map, &cache);
 
 		nowhere_map_print(_swaybar->map);
 	}

@@ -15,7 +15,7 @@ static void nowhere_print_node(struct nowhere_node *_node) {
 	if (_node->color._unused) {
 		printf("\"color\":\"#%02x%02x%02x\",", _node->color.r, _node->color.g, _node->color.b);
 	}
-	if (!_node->alt) {
+	if (!_node->usage) {
 		printf("\"full_text\":\"%s\"", _node->full_text);
 	} else {
 		printf("\"full_text\":\"%s\"", _node->alt_text);

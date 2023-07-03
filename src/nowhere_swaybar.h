@@ -18,8 +18,8 @@ struct nowhere_color {
 	char _unused;
 };
 
-enum nowhere_alt {
-	NOWHERE_DEFAULT = 0x0,
+enum nowhere_usage {
+	NOWHERE_DEFAULT = 0x1,
 	NOWHERE_ALT = 0x2,
 	NOWHERE_DISABLED = 0x4
 };
@@ -29,7 +29,7 @@ struct nowhere_node {
 	char full_text[NOWHERE_TXTSIZ];
 	char alt_text[NOWHERE_TXTSIZ];
 	struct nowhere_color color;
-	int alt;
+	int usage;
 };
 
 struct nowhere_swaybar {
