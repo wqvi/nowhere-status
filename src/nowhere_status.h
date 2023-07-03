@@ -9,8 +9,6 @@ struct nowhere_battery_info {
 struct nowhere_network_info {
 	char ifname[16];
 	char addr[16];
-	char essid[48];
-	int quality;
 };
 
 int nowhere_battery(struct nowhere_battery_info *_bat);
