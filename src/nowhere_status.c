@@ -59,11 +59,6 @@ static int nowhere_parse_args(int argc, char **argv) {
 	return 0;
 }
 
-static void nowhere_blit(char *blk1) {
-	printf(",[%s]\n", blk1);
-	fflush(stdout);
-}
-
 int main(int argc, char **argv) {
 	int code = nowhere_parse_args(argc, argv);
 	if (code != 0)
