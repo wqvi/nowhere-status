@@ -1,16 +1,23 @@
 #ifndef NOWHERE_STATUS_H
 #define NOWHERE_STATUS_H
 
-struct nowhere_bat_info {
+struct nowhere_battery_info {
 	int capacity;
 	int status;
 };
 
-int nowhere_battery(struct nowhere_bat_info *_bat);
+struct nowhere_network_info {
+	char ifname[16];
+	char addr[16];
+	char essid[48];
+	int quality;
+};
+
+int nowhere_battery(struct nowhere_battery_info *_bat);
 
 int nowhere_date();
 
-int nowhere_network(const char *_ifname);
+int nowhere_network(struct nowhere_network_info *_net);
 
 int nowhere_ram();
 

@@ -59,11 +59,14 @@ int main(int argc, char **argv) {
 
 	while (!nowhere_terminate) {
 		printf("[");
-
-		nowhere_network("wlan0");
+		
+		struct nowhere_network_info net = {
+			.ifname = "wlan0"
+		};
+		nowhere_network(&net);
 		nowhere_ram();
 		nowhere_temperature(0);
-		struct nowhere_bat_info bat;
+		struct nowhere_battery_info bat;
 		nowhere_battery(&bat);
 		nowhere_date();
 

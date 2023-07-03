@@ -31,7 +31,7 @@
 #define NOT_CHR "Not charging\n"
 #endif
 
-int nowhere_battery(struct nowhere_bat_info *_bat) {
+int nowhere_battery(struct nowhere_battery_info *_bat) {
 	char buffer[4096];
 
 	if (nowhere_read(buffer, 4096, BAT0"capacity") == -1) return -1;
