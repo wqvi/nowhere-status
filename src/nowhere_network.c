@@ -30,7 +30,7 @@ static int nowhere_resolve_ifname(struct iwreq *_rq, const char *_ifname) {
 	return 0;
 }
 
-int nowhere_network(struct nowhere_network_info *_net, const char *_ifname) {
+int nowhere_network(struct nowhere_node *_node, const char *_ifname) {
 	struct iwreq rq;
 	if (nowhere_resolve_ifname(&rq, _ifname) == -1) return -1;
 	
