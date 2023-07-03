@@ -1,6 +1,5 @@
 #include "nowhere_alloc.h"
 #include "nowhere_map.h"
-
 #include <string.h>
 
 struct nowhere_map {
