@@ -7,6 +7,16 @@
 #include <sys/timerfd.h>
 #include <unistd.h>
 
+static void nowhere_print_node(struct nowhere_node *_node) {
+	printf("{");
+	printf("\"name\":\"%s\",", _node->name);
+	if (_node->color._unused) {
+		printf("\"color\":\"#%02x%02x%02x\",", _node->color.r, _node->color.g, _node->color.b);
+	}
+	printf("\"full_text\":\"%s\"", _node->full_text);
+	printf("}");
+}
+
 int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar) {
 	if (!_swaybar) return -1;
 
@@ -94,16 +104,15 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 				if (read(_swaybar->timerfd, &exp, sizeof(uint64_t)) < 0) return -1;
 			}
 		}
+		
+		struct nowhere_node node;
 
-		struct nowhere_network_info net = {
-			.ifname = "wlan0"
-		};
-		nowhere_network(&net);
+		nowhere_network(NULL, "wlan0");
 		nowhere_ram();
 		nowhere_temperature(0);
-		struct nowhere_node node;
-		memset(&node, 0, sizeof(struct nowhere_node));
 		nowhere_battery(&node);
+		nowhere_print_node(&node);
+		printf(",");
 		nowhere_date();
 
 		printf("]\n");

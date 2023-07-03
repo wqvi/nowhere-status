@@ -17,7 +17,7 @@ int nowhere_battery(struct nowhere_node *_node);
 
 int nowhere_date();
 
-int nowhere_network(struct nowhere_network_info *_net);
+int nowhere_network(struct nowhere_network_info *_net, const char *_ifname);
 
 int nowhere_ram();
 

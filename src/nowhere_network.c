@@ -1,12 +1,11 @@
-#include "nowhere_status.h"
-
-#include <linux/wireless.h>
-#include <ifaddrs.h>
-#include <sys/ioctl.h>
 #include <arpa/inet.h>
-#include <unistd.h>
+#include <ifaddrs.h>
+#include <linux/wireless.h>
+#include "nowhere_status.h"
 #include <stdio.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 static int nowhere_resolve_ifname(struct iwreq *_rq, const char *_ifname) {
 	struct ifaddrs *head;
@@ -31,9 +30,9 @@ static int nowhere_resolve_ifname(struct iwreq *_rq, const char *_ifname) {
 	return 0;
 }
 
-int nowhere_network(struct nowhere_network_info *_net) {
+int nowhere_network(struct nowhere_network_info *_net, const char *_ifname) {
 	struct iwreq rq;
-	if (nowhere_resolve_ifname(&rq, _net->ifname) == -1) return -1;
+	if (nowhere_resolve_ifname(&rq, _ifname) == -1) return -1;
 	
 	int fd = socket(AF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0);
 	if (fd == -1) return -1;
@@ -42,11 +41,11 @@ int nowhere_network(struct nowhere_network_info *_net) {
 	rq.u.addr.sa_family = AF_INET;
 	if (ioctl(fd, SIOCGIFADDR, &rq) < 0) return -1;
 
-	memset(_net->addr, 0, INET_ADDRSTRLEN);
+	char addr[INET_ADDRSTRLEN];
 	struct sockaddr_in *in = (struct sockaddr_in *)&rq.u.ap_addr;
-	inet_ntop(AF_INET, &in->sin_addr, _net->addr, INET_ADDRSTRLEN);
+	inet_ntop(AF_INET, &in->sin_addr, addr, INET_ADDRSTRLEN);
 
-	printf("{\"name\":\"wireless\",\"full_text\":\"%s %s\"},", _net->ifname, _net->addr);
+	printf("{\"name\":\"wireless\",\"full_text\":\"%s %s\"},", _ifname, addr);
 	
 
 	close(fd);

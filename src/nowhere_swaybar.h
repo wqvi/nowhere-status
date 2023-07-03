@@ -4,9 +4,9 @@
 #include "nowhere_map.h"
 
 struct nowhere_color {
-	char r;
-	char g;
-	char b;
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
 	char _unused;
 };
 
