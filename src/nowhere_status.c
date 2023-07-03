@@ -1,5 +1,8 @@
 #include "nowhere_status.h"
 
+#define _GNU_SOURCE
+#include <fcntl.h>
+#include <sys/ioctl.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,25 +84,28 @@ int main(int argc, char **argv) {
 		}
 	};
 	
-	int timerfd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC);
+	int timerfd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC | TFD_NONBLOCK);
 
 	timerfd_settime(timerfd, TFD_TIMER_ABSTIME, &timerspec, NULL);
 
 	int epollfd = epoll_create1(EPOLL_CLOEXEC);
 	
 	struct epoll_event event = {
-		.events = EPOLLIN,
+		.events = EPOLLIN | EPOLLET,
 		.data = {
 			.fd = timerfd
 		}
 	};
 
 	struct epoll_event stdin_event = {
-		.events = EPOLLIN,
+		.events = EPOLLIN | EPOLLET,
 		.data = {
 			.fd = STDIN_FILENO
 		}
 	};
+
+	int flags = fcntl(STDIN_FILENO, F_GETFD);
+	fcntl(STDIN_FILENO, F_SETFD, flags | O_NONBLOCK);
 
 	struct epoll_event events[2];
 
@@ -113,10 +119,7 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	uint64_t exp = 1;
-	printf("{\"version\":1,\"click_events\":true}\n");
-	printf("[\n");
-	printf("[]");
+	printf("{\"version\":1,\"click_events\":true}\n[[]\n");
 	fflush(stdout);
 	fflush(stdin);
 	char blk1[512] = "{\"full_text\":\"blk1\"},";
@@ -126,20 +129,16 @@ int main(int argc, char **argv) {
 		for (int i = 0; i < num; i++) {
 			struct epoll_event *e = &events[i];
 			if (e->data.fd == timerfd) {
-				size_t size = read(timerfd, &exp, sizeof(uint64_t));
-				if (size != sizeof(uint64_t)) {
-					close(epollfd);
-					close(timerfd);
-					return -1;
-				}
+				uint64_t exp;
+				read(timerfd, &exp, sizeof(uint64_t));
 				snprintf(blk1, 512, "{\"full_text\":\"timerfd %ld\"},", exp);
 			} else if (e->data.fd == STDIN_FILENO) {
-				char buffer[128];
-
-				size_t size = read(STDIN_FILENO, buffer, 128);
+				char buffer[BUFSIZ];
+				read(STDIN_FILENO, buffer, BUFSIZ);
 				snprintf(blk2, 512, "{\"color\":\"#FF0000\",\"full_text\":\"blk2\"},");
 			}
 		}
+
 		nowhere_blit(blk1, blk2);
 		snprintf(blk2, 512, "{\"full_text\":\"blk2\"},");
 	}
