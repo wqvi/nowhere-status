@@ -1,6 +1,8 @@
 #ifndef NOWHERE_STATUS_H
 #define NOWHERE_STATUS_H
 
+#include "nowhere_swaybar.h"
+
 struct nowhere_battery_info {
 	int capacity;
 	int status;
@@ -10,22 +12,6 @@ struct nowhere_network_info {
 	char ifname[16];
 	char addr[16];
 };
-
-struct nowhere_block {
-	struct nowhere_block *next;
-};
-
-struct nowhere_swaybar {
-	int timerfd;
-	int epollfd;
-	struct nowhere_block *head;
-};
-
-int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar);
-
-int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar);
-
-void nowhere_swaybar_destroy(struct nowhere_swaybar *_swaybar);
 
 int nowhere_battery(struct nowhere_battery_info *_bat);
 
