@@ -107,12 +107,17 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 		
 		struct nowhere_node node;
 
-		nowhere_network(NULL, "wlan0");
+		nowhere_network(&node, "wlan0");
+		nowhere_print_node(&node);
+		printf(",");
+
 		nowhere_ram();
 		nowhere_temperature(0);
+		
 		nowhere_battery(&node);
 		nowhere_print_node(&node);
 		printf(",");
+		
 		nowhere_date();
 
 		printf("]\n");
