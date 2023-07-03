@@ -1,5 +1,5 @@
+#include "nowhere_alloc.h"
 #include "nowhere_status.h"
-
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
@@ -42,22 +42,20 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar) {
 		.data = { .fd = timerfd }
 	};
 
-	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, STDIN_FILENO, &stdin_event) < 0) {
-		close(timerfd);
-		close(epollfd);
-		return -1;
-	}
+	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, STDIN_FILENO, &stdin_event) < 0) goto error;
 
-	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, timerfd, &timer_event) < 0) {
-		close(timerfd);
-		close(epollfd);
-		return -1;
-	}
+	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, timerfd, &timer_event) < 0) goto error;
+	
+	if (nowhere_map_create(&_swaybar->map, 8, NOWHERE_ALIGN(sizeof(struct nowhere_node), 64)) == -1) goto error;
 
 	_swaybar->timerfd = timerfd;
 	_swaybar->epollfd = epollfd;
 
 	return 0;
+error:
+	close(timerfd);
+	close(epollfd);
+	return -1;
 }
 
 int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
@@ -97,15 +95,15 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 			}
 		}
 
-		
 		struct nowhere_network_info net = {
 			.ifname = "wlan0"
 		};
 		nowhere_network(&net);
 		nowhere_ram();
 		nowhere_temperature(0);
-		struct nowhere_battery_info bat;
-		nowhere_battery(&bat);
+		struct nowhere_node node;
+		memset(&node, 0, sizeof(struct nowhere_node));
+		nowhere_battery(&node);
 		nowhere_date();
 
 		printf("]\n");
@@ -118,4 +116,5 @@ void nowhere_swaybar_destroy(struct nowhere_swaybar *_swaybar) {
 
 	close(_swaybar->epollfd);
 	close(_swaybar->timerfd);
+	nowhere_free(_swaybar->map);
 }
