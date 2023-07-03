@@ -4,8 +4,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
-static int nowhere_net_common(int _fd, struct iwreq *_rq, char *_addr) {
+static int nowhere_network_common(int _fd, struct iwreq *_rq, char *_addr) {
 	// Network device is up
 	if (ioctl(_fd, SIOCGIFFLAGS, _rq) < 0) return -1;
 
@@ -13,18 +14,18 @@ static int nowhere_net_common(int _fd, struct iwreq *_rq, char *_addr) {
 	
 	// Converts numerical ip address to string address
 	_rq->u.addr.sa_family = AF_INET;
-	if (ioctl(_fd, SIOCGIFADDR, rq) < 0) return -1;
+	if (ioctl(_fd, SIOCGIFADDR, _rq) < 0) return -1;
 
-	memset(addr, 0, INET_ADDRSTRLEN);
-	struct sockaddr_in *in = (struct sockaddr_in *)&rq->u.ap_addr;
-	inet_ntop(AF_INET, &in->sin_addr, addr, INET_ADDRSTRLEN);
+	memset(_addr, 0, INET_ADDRSTRLEN);
+	struct sockaddr_in *in = (struct sockaddr_in *)&_rq->u.ap_addr;
+	inet_ntop(AF_INET, &in->sin_addr, _addr, INET_ADDRSTRLEN);
 	
 	return 0;
 }
 
-static int wireless(int _fd, struct iwreq *_rq) {
+static int nowhere_wireless(int _fd, struct iwreq *_rq) {
 	char addr[INET_ADDRSTRLEN];
-	if (common(_fd, _rq, addr)) return -1;
+	if (nowhere_network_common(_fd, _rq, addr)) return -1;
 
 	// essid variable is 16 bytes over essid max size
 	char essid[48];
@@ -62,11 +63,11 @@ static int wireless(int _fd, struct iwreq *_rq) {
 	return 0;
 }
 
-static int resolve_ifname(struct iwreq *_rq, const char *_ifname) {
+static int nowhere_resolve_ifname(struct iwreq *_rq, const char *_ifname) {
 	struct ifaddrs *head;
 	if (getifaddrs(&head)) return -1;
 	
-	if (struct ifaddrs *list = head; list != NULL; list = list->ifa_next) {
+	for (struct ifaddrs *list = head; list != NULL; list = list->ifa_next) {
 		// skip loopback device
 		if (!strcmp(list->ifa_name, "lo")) continue;
 
@@ -77,7 +78,7 @@ static int resolve_ifname(struct iwreq *_rq, const char *_ifname) {
 		}
 
 		// validate provided ifname
-		if (!strncmp(list->ifa_name, ifname)) strncpy(_rq->ifr_name, _ifname, IFNAMSIZ);
+		if (!strcmp(list->ifa_name, _ifname)) strncpy(_rq->ifr_name, _ifname, IFNAMSIZ);
 	}
 
 	freeifaddrs(head);
@@ -85,14 +86,14 @@ static int resolve_ifname(struct iwreq *_rq, const char *_ifname) {
 	return 0;
 }
 
-int nowhere_status_network(const char *_ifname) {
+int nowhere_network(const char *_ifname) {
 	struct iwreq rq;
-	if (resolve_ifname(&rq, _ifname)) return -1;
+	if (nowhere_resolve_ifname(&rq, _ifname)) return -1;
 
 	int fd = socket(AF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0);
 	if (fd == -1) return -1;
 
-	if (ioctl(fd, SIOCGIWNAME, &rq) < 0) wired(fd, &rq);
+	if (ioctl(fd, SIOCGIWNAME, &rq) < 0) nowhere_wireless(fd, &rq);
 
 	close(fd);
 

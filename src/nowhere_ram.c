@@ -1,5 +1,8 @@
 #include "nowhere_read.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 static int nowhere_line_cmp(const char *_haystack, const char *_needle) {
 	return (strncmp(_haystack, _needle, strlen(_needle)) == 0);
 }

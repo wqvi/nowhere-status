@@ -1,4 +1,4 @@
-#include "read.h"
+#include "nowhere_read.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -13,7 +13,7 @@ int nowhere_read(char *_buffer, size_t _size, const char *_file) {
 
 	if (_size < stat.st_size) goto error;
 
-	if (read(fd, _item, stat.st_size) == 0) goto error;
+	if (read(fd, _buffer, stat.st_size) == 0) goto error;
 	
 	close(fd);
 	return 0;

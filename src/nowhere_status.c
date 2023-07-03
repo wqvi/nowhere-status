@@ -1,11 +1,17 @@
+#include "nowhere_status.h"
+
 #include <getopt.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
 
 static volatile sig_atomic_t nowhere_terminate = 0;
 
 static int nowhere_parse_args(int argc, char **argv) {
 	static const struct option opts[] = {
 		{"help", no_argument, 0, 'h'},
+		{"version", no_argument, 0, 'v'},
 		{"offline", no_argument, 0, 0},
 		{0, 0, 0, 0}
 	};
@@ -22,14 +28,19 @@ static int nowhere_parse_args(int argc, char **argv) {
 		case 't':
 			// thermal zone
 			break;
-		case 'i'
+		case 'i':
 			// ifname
 			break;
-		case 'h'
+		case 'h':
 			// help
+			printf("Usage: %s [options]\n", argv[0]);
+			puts("\t--offline\t\tdoes not retrieve weather info");
+			puts("\t-t\t\t\tspecify cpu temperature zone");
+			puts("\t-i\t\t\tspecify wireless device");
 			return 1;
-		case 'v'
+		case 'v':
 			// version
+			puts("nowhere-status v0.1 2023 mynahisnowhere and contributors");
 			return 1;
 		default:
 			return -1;
@@ -49,11 +60,11 @@ int main(int argc, char **argv) {
 	while (!nowhere_terminate) {
 		printf("[");
 
-		//nowhere_net("wlan0");
-		//nowhere_ram();
-		//nowhere_temperature(0);
-		//nowhere_bat();
-		//nowhere_date();
+		nowhere_network("wlan0");
+		nowhere_ram();
+		nowhere_temperature(0);
+		nowhere_battery();
+		nowhere_date();
 
 		printf("],\r");
 		fflush(stdout);

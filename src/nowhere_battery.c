@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
@@ -13,15 +14,15 @@
 #endif
 
 #ifndef DIS
-#define "Discharging"
+#define DIS "Discharging"
 #endif
 
 #ifndef CHR
-#define "Charging"
+#define CHR "Charging"
 #endif
 
 #ifndef FUL
-#define "Full"
+#define FUL "Full"
 #endif
 
 struct nowhere_bat_info {
@@ -29,7 +30,7 @@ struct nowhere_bat_info {
 	int status;
 };
 
-int nowhere_bat(struct nowhere_bat_info *_bat) {
+int nowhere_battery(struct nowhere_bat_info *_bat) {
 	char buffer[4096];
 
 	if (nowhere_read(buffer, 4096, BAT0"capacity") == -1) return -1;
@@ -39,9 +40,9 @@ int nowhere_bat(struct nowhere_bat_info *_bat) {
 	
 	if (!strncmp(buffer, DIS, sizeof(DIS))) {		
 		_bat->status = 0;
-	} else if (!strcmp(buffer, CHR, sizeof(CHR))) {
+	} else if (!strncmp(buffer, CHR, sizeof(CHR))) {
 		_bat->status = 1;
-	} else if (!strcmp(buffer, FUL, sizeof(FUL))) {
+	} else if (!strncmp(buffer, FUL, sizeof(FUL))) {
 		_bat->status = 2;
 	} else {
 		return -1;
