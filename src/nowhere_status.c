@@ -12,7 +12,9 @@ static int nowhere_parse_args(int argc, char **argv) {
 	static const struct option opts[] = {
 		{"help", no_argument, 0, 'h'},
 		{"version", no_argument, 0, 'v'},
-		{"offline", no_argument, 0, 0},
+		{"offline", no_argument, 0, 'o'},
+		{"ifname", no_argument, 0, 'i'},
+		{"thermal_zone", no_argument, 0, 't'},
 		{0, 0, 0, 0}
 	};
 
@@ -20,10 +22,8 @@ static int nowhere_parse_args(int argc, char **argv) {
 	int index;
 	while (c = getopt_long(argc, argv, "t:i:hv", opts, &index), c != -1) {
 		switch (c) {
-		case 0:
-			if (index == 1) {
-				// offline
-			}
+		case 'o':
+			// offline
 			break;
 		case 't':
 			// thermal zone
@@ -34,9 +34,12 @@ static int nowhere_parse_args(int argc, char **argv) {
 		case 'h':
 			// help
 			printf("Usage: %s [options]\n", argv[0]);
-			puts("\t--offline\t\tdoes not retrieve weather info");
-			puts("\t-t\t\t\tspecify cpu temperature zone");
-			puts("\t-i\t\t\tspecify wireless device");
+			puts("\t--offline\t\t\tdoes not retrieve weather info");
+			puts("\t-t NUMBER, --thermal_zone=NUMBER");
+			puts("\t\t\t\t\tspecify cpu temperature zone");
+			puts("\t-i STRING, --ifname=STRING\tspecify wireless device");
+			puts("\t-v, --version\t\t\tprints version and exits");
+			puts("\t-h, --help\t\t\tprints this message and exits");
 			return 1;
 		case 'v':
 			// version
