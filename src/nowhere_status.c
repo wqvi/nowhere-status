@@ -1,4 +1,7 @@
 #include <getopt.h>
+#include <stdio.h>
+
+static volatile sig_atomic_t nowhere_terminate = 0;
 
 static int nowhere_parse_args(int argc, char **argv) {
 	static const struct option opts[] = {
@@ -40,6 +43,25 @@ int main(int argc, char **argv) {
 	int code = nowhere_parse_args(argc, argv);
 	if (code != 0)
 		return code;
+
+	printf("{\"version\":1, \"click_events\":true}\n[");
+
+	while (!nowhere_terminate) {
+		printf("[");
+
+		//nowhere_net("wlan0");
+		//nowhere_ram();
+		//nowhere_temperature(0);
+		//nowhere_bat();
+		//nowhere_date();
+
+		printf("],\r");
+		fflush(stdout);
+
+		// rudimentary way of updating every minute
+		// it should update based on the block status
+		sleep(60);
+	}
 
 	return 0;
 }
