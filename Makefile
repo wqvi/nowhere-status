@@ -1,6 +1,6 @@
-BIN := status
+BIN := status_callback
 
-CFLAGS = -O2 -pedantic -Wall -Wextra -Wno-sign-compare -std=c99
+CFLAGS = -O2 -pedantic -Wall -Wextra -Wno-sign-compare -std=gnu99
 LIBS = -lcurl -lm
 
 BUILD_DIR := ./build

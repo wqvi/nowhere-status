@@ -3,8 +3,11 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/epoll.h>
+#include <sys/timerfd.h>
 
 static volatile sig_atomic_t nowhere_terminate = 0;
 
@@ -53,14 +56,98 @@ static int nowhere_parse_args(int argc, char **argv) {
 	return 0;
 }
 
+static void nowhere_blit(char *blk1, char *blk2) {
+	printf(",[%s%s]\n", blk1, blk2);
+	fflush(stdout);
+}
+
 int main(int argc, char **argv) {
 	int code = nowhere_parse_args(argc, argv);
 	if (code != 0)
 		return code;
 
-	printf("{\"version\":1, \"click_events\":true}\n[");
 
-	while (!nowhere_terminate) {
+	struct timespec now;
+	clock_gettime(CLOCK_REALTIME, &now);
+
+	struct itimerspec timerspec = {
+		.it_interval = {
+			.tv_sec = 5,
+			.tv_nsec = 0 
+		},
+		.it_value = {
+			.tv_sec = now.tv_sec,
+			.tv_nsec = 0
+		}
+	};
+	
+	int timerfd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC);
+
+	timerfd_settime(timerfd, TFD_TIMER_ABSTIME, &timerspec, NULL);
+
+	int epollfd = epoll_create1(EPOLL_CLOEXEC);
+	
+	struct epoll_event event = {
+		.events = EPOLLIN,
+		.data = {
+			.fd = timerfd
+		}
+	};
+
+	struct epoll_event stdin_event = {
+		.events = EPOLLIN,
+		.data = {
+			.fd = STDIN_FILENO
+		}
+	};
+
+	struct epoll_event events[2];
+
+	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, timerfd, &event) != 0) {
+		perror("epoll_ctl");
+		return -1;
+	}
+
+	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, STDIN_FILENO, &stdin_event) != 0) {
+		perror("epoll_ctl");
+		return -1;
+	}
+
+	uint64_t exp = 1;
+	printf("{\"version\":1,\"click_events\":true}\n");
+	printf("[\n");
+	printf("[]");
+	fflush(stdout);
+	fflush(stdin);
+	char blk1[512] = "{\"full_text\":\"blk1\"},";
+	char blk2[512] = "{\"full_text\":\"blk2\"},";
+	for (;;) {
+		int num = epoll_wait(epollfd, events, 2, -1);
+		for (int i = 0; i < num; i++) {
+			struct epoll_event *e = &events[i];
+			if (e->data.fd == timerfd) {
+				size_t size = read(timerfd, &exp, sizeof(uint64_t));
+				if (size != sizeof(uint64_t)) {
+					close(epollfd);
+					close(timerfd);
+					return -1;
+				}
+				snprintf(blk1, 512, "{\"full_text\":\"timerfd %ld\"},", exp);
+			} else if (e->data.fd == STDIN_FILENO) {
+				char buffer[128];
+
+				size_t size = read(STDIN_FILENO, buffer, 128);
+				snprintf(blk2, 512, "{\"color\":\"#FF0000\",\"full_text\":\"blk2\"},");
+			}
+		}
+		nowhere_blit(blk1, blk2);
+		snprintf(blk2, 512, "{\"full_text\":\"blk2\"},");
+	}
+
+	close(epollfd);
+	close(timerfd);
+
+	/*while (!nowhere_terminate) {
 		printf("[");
 		
 		struct nowhere_network_info net = {
@@ -79,7 +166,7 @@ int main(int argc, char **argv) {
 		// rudimentary way of updating every minute
 		// it should update based on the block status
 		sleep(60);
-	}
+	}*/
 
 	return 0;
 }
