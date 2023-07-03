@@ -9,7 +9,6 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
-#include <poll.h>
 #include <sys/epoll.h>
 #include <sys/timerfd.h>
 
@@ -72,7 +71,7 @@ int main(int argc, char **argv) {
 
 	struct itimerspec timerspec = {
 		.it_interval = {
-			.tv_sec = 5,
+			.tv_sec = 5, 
 			.tv_nsec = 0 
 		},
 		.it_value = {
@@ -96,6 +95,13 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
+	struct epoll_event stdin_event = {
+		.events = EPOLLIN,
+		.data = {
+			.fd = STDIN_FILENO
+		}
+	};
+
 	struct epoll_event event = {
 		.events = EPOLLIN | EPOLLET,
 		.data = {
@@ -103,21 +109,36 @@ int main(int argc, char **argv) {
 		}
 	};
 
-	struct epoll_event events[1];
+	struct epoll_event events[2];
 
-	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, timerfd, &event) != 0) {
+	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, STDIN_FILENO, &stdin_event) < 0) {
 		close(timerfd);
 		close(epollfd);
 		return EXIT_FAILURE;
 	}
 
+	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, timerfd, &event) < 0) {
+		close(timerfd);
+		close(epollfd);
+		return EXIT_FAILURE;
+	}
+	
 	fprintf(stdout, "{\"version\":1,\"click_events\":true}\n[[]\n");
 	fflush(stdout);
 	for (;;) {
-		int num = epoll_wait(epollfd, events, 1, -1);
+		fprintf(stdout, ",[");
+		int num = epoll_wait(epollfd, events, 2, -1);
 		for (int i = 0; i < num; i++) {
 			struct epoll_event *e = &events[i];
-			if (e->data.fd == timerfd) {
+			if (e->data.fd == STDIN_FILENO) {
+				char buffer[BUFSIZ];
+				if (read(STDIN_FILENO, buffer, BUFSIZ) == 0) {
+					close(timerfd);
+					close(epollfd);
+					return -1;
+				}
+				fprintf(stdout, "{\"full_text\":\"I am stdin\"},");
+			} else if (e->data.fd == timerfd) {
 				uint64_t exp;
 				if (read(timerfd, &exp, sizeof(uint64_t)) == 0) {
 					close(timerfd);
@@ -127,22 +148,9 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		struct pollfd pfds = {
-			.fd = STDIN_FILENO,
-			.events = POLLIN
-		};
-
-		poll(&pfds, 1, 10);
-
-		fprintf(stdout, ",[");
 		struct nowhere_network_info net = {
 			.ifname = "wlan0"
 		};
-		if (pfds.revents & POLLIN) {
-			char buffer[BUFSIZ];
-			read(pfds.fd, buffer, BUFSIZ);
-			fprintf(stdout, "{\"full_text\":\"I am stdin %c %c\"},", buffer[0], buffer[1]);
-		}
 		nowhere_network(&net);
 		nowhere_ram();
 		nowhere_temperature(0);
