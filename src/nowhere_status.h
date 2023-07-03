@@ -13,7 +13,7 @@ struct nowhere_network_info {
 	char addr[16];
 };
 
-int nowhere_battery(struct nowhere_battery_info *_bat);
+int nowhere_battery(struct nowhere_node *_node);
 
 int nowhere_date();
 
