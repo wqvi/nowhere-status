@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <time.h>
 
 int nowhere_date() {
@@ -9,6 +10,8 @@ int nowhere_date() {
 	// YYYY-MM-DD HH:MM
 	char date[24];
 	strftime(date, 24, "%F %R", tm);
+
+	printf("{\"name\":\"date\",\"full_text\":\"%s\"},", date);
 
 	return 0;
 }

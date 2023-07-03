@@ -70,7 +70,6 @@ int main(int argc, char **argv) {
 		nowhere_battery(&bat);
 		nowhere_date();
 
-
 		printf("],\r");
 		fflush(stdout);
 

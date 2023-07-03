@@ -34,11 +34,11 @@
 int nowhere_battery(struct nowhere_battery_info *_bat) {
 	char buffer[4096];
 
-	if (nowhere_read(buffer, 4096, BAT0"capacity") == -1) return -1;
+	if (nowhere_device_read(buffer, 4096, BAT0"capacity") == -1) return -1;
 	_bat->capacity = (int)strtol(buffer, NULL, 0);
 	
-	if (nowhere_read(buffer, 4096, BAT0"status") == -1) return -1;
-	
+	if (nowhere_device_read(buffer, 4096, BAT0"status") == -1) return -1;
+
 	if (strncmp(buffer, DIS, sizeof(DIS)) == 0) {
 		_bat->status = 0;
 	} else if (strncmp(buffer, CHR, sizeof(CHR)) == 0) {
