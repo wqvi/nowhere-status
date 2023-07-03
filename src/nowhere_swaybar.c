@@ -111,14 +111,20 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 		nowhere_print_node(&node);
 		printf(",");
 
-		nowhere_ram();
-		nowhere_temperature(0);
+		nowhere_ram(&node);
+		nowhere_print_node(&node);
+		printf(",");
+		
+		nowhere_temperature(&node, 0);
+		nowhere_print_node(&node);
+		printf(",");
 		
 		nowhere_battery(&node);
 		nowhere_print_node(&node);
 		printf(",");
 		
-		nowhere_date();
+		nowhere_date(&node);
+		nowhere_print_node(&node);
 
 		printf("]\n");
 		fflush(stdout);

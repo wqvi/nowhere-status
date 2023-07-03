@@ -5,12 +5,12 @@
 
 int nowhere_battery(struct nowhere_node *_node);
 
-int nowhere_date();
+int nowhere_date(struct nowhere_node *_node);
 
 int nowhere_network(struct nowhere_node *_node, const char *_ifname);
 
-int nowhere_ram();
+int nowhere_ram(struct nowhere_node *_node);
 
-int nowhere_temperature(int _zone);
+int nowhere_temperature(struct nowhere_node *_node, int _zone);
 
 #endif // NOWHERE_STATUS_H

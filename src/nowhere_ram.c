@@ -1,5 +1,5 @@
 #include "nowhere_read.h"
-
+#include "nowhere_swaybar.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +8,7 @@ static int nowhere_line_cmp(const char *_haystack, const char *_needle) {
 	return (strncmp(_haystack, _needle, strlen(_needle)) == 0);
 }
 
-int nowhere_ram() {
+int nowhere_ram(struct nowhere_node *_node) {
 	long double memtotal = 0;
 	long double memfree = 0;
 	long double buffers = 0;
@@ -38,7 +38,10 @@ int nowhere_ram() {
 	// I hope your system is little endian
 	long double gb = 1 << 20;
 
-	printf("{\"name\":\"ram\",\"full_text\":\"%.1LfGb/%.1LfGb\"},", (memtotal - memfree - buffers - cached) / gb, memtotal / gb);
+	snprintf(_node->name, 16, "ram");
+	long double memused = (memtotal - memfree - buffers - cached) / gb;
+	snprintf(_node->full_text, 24, "%.1LfGb/%.1LfGb", memused, memtotal / gb);
+	_node->color._unused = 0;
 
 	return 0;
 }
