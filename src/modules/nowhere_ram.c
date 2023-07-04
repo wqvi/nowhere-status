@@ -1,4 +1,3 @@
-#include "nowhere_read.h"
 #include "nowhere_swaybar.h"
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,6 +1,5 @@
 #include <math.h>
-#include "nowhere_read.h"
-#include "nowhere_swaybar.h"
+#include "nowhere_status.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,7 +8,7 @@ int nowhere_temperature(struct nowhere_node *_node, int zone) {
 	snprintf(file, 128, "/sys/class/thermal/thermal_zone%d/temp", zone);
 	char buffer[4096];
 	
-	if (nowhere_device_read(buffer, 4096, file)) return -1;
+	if (nowhere_device_read(buffer, 4096, file) == -1) return -1;
 
 	int temp = (int)(strtod(buffer, NULL) / 1000.0);
 

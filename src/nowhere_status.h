@@ -3,6 +3,8 @@
 
 #include "nowhere_swaybar.h"
 
+int nowhere_device_read(char *_buffer, size_t _size, const char *_file);
+
 int nowhere_battery(struct nowhere_node *_node);
 
 int nowhere_date(struct nowhere_node *_node);
