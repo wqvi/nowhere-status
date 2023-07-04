@@ -1,32 +1,7 @@
-#include "nowhere_read.h"
-
-#include <stdio.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include "nowhere_read.h"
+#include <sys/stat.h>
 #include <unistd.h>
-#include <stdlib.h>
-
-int nowhere_read(char **_buffer, size_t _size, const char *_file) {
-	FILE *fp;
-	if (!(fp = fopen(_file, "rb"))) return -1;
-
-	fseek(fp, 0, SEEK_END);
-	long size = ftell(fp);
-	rewind(fp);
-
-	if (_size < size) {
-		fclose(fp);
-		return -1;
-	}
-
-	printf("%ld\n", size);
-
-	char *ptr = malloc(size);
-	int rc = fread(ptr, sizeof(char), size, fp);
-	fclose(fp);
-	*_buffer = ptr;
-	return rc < 0;
-}
 
 int nowhere_device_read(char *_buffer, size_t _size, const char *_file) {
 	int fd = open(_file, O_RDONLY);
