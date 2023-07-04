@@ -1,7 +1,7 @@
-#include "nowhere_alloc.h"
 #include "nowhere_status.h"
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/epoll.h>
 #include <sys/timerfd.h>
@@ -236,5 +236,5 @@ void nowhere_swaybar_destroy(struct nowhere_swaybar *_swaybar) {
 	close(_swaybar->epollfd);
 	if (!_swaybar->config.offline) close(_swaybar->weatherfd);
 	close(_swaybar->timerfd);
-	nowhere_free(_swaybar->map);
+	free(_swaybar->map);
 }

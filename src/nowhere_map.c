@@ -1,7 +1,7 @@
-#include "nowhere_alloc.h"
 #include "nowhere_map.h"
 #include "nowhere_swaybar.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 struct nowhere_map {
@@ -33,10 +33,9 @@ static size_t nowhere_bezout_hash(const char *_key) {
 }
 
 int nowhere_map_create(nowhere_map_t *_map, size_t _count) {
-	size_t entry_size = NOWHERE_ALIGN(sizeof(struct nowhere_node), 64);
-	size_t size = sizeof(struct nowhere_map) + _count * entry_size;
+	size_t size = sizeof(struct nowhere_map) + _count * sizeof(struct nowhere_node);
 
-	char *ptr = nowhere_alloc(entry_size, size);
+	char *ptr = malloc(size);
 	if (!ptr) return -1;
 
 	memset(ptr, 0, size);

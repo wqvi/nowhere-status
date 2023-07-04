@@ -7,7 +7,7 @@ CFLAGS = -I$(SRC_DIR) -O2 -pedantic -Wall -Wextra -Wno-sign-compare -std=gnu99
 LIBS = -lcurl -lm
 
 
-OBJS := build/main.o build/nowhere_alloc.o build/nowhere_battery.o build/nowhere_date.o build/nowhere_map.o build/nowhere_network.o build/nowhere_ram.o build/nowhere_read.o build/nowhere_swaybar.o build/nowhere_temperature.o build/nowhere_weather.o
+OBJS := build/main.o build/nowhere_battery.o build/nowhere_date.o build/nowhere_map.o build/nowhere_network.o build/nowhere_ram.o build/nowhere_read.o build/nowhere_swaybar.o build/nowhere_temperature.o build/nowhere_weather.o
 
 .DELETE_ON_ERROR:
 $(BUILD_DIR)/$(BIN): $(OBJS)
