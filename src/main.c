@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 
 	int c;
 	int index;
-	while (c = getopt_long(argc, argv, "t:i:l:hv", opts, &index), c != -1) {
+	while (c = getopt_long(argc, argv, "ot:i:l:hv", opts, &index), c != -1) {
 		switch (c) {
 		case 'o':
 			// offline
