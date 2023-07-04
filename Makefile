@@ -1,10 +1,11 @@
 BIN := nowhere-status
 
-CFLAGS = -O2 -pedantic -Wall -Wextra -Wno-sign-compare -std=gnu99
-LIBS = -lcurl -lm
-
 BUILD_DIR := ./build
 SRC_DIR := ./src
+
+CFLAGS = -I$(SRC_DIR) -O2 -pedantic -Wall -Wextra -Wno-sign-compare -std=gnu99
+LIBS = -lcurl -lm
+
 
 OBJS := build/main.o build/nowhere_alloc.o build/nowhere_battery.o build/nowhere_date.o build/nowhere_map.o build/nowhere_network.o build/nowhere_ram.o build/nowhere_read.o build/nowhere_swaybar.o build/nowhere_temperature.o build/nowhere_weather.o
 
@@ -14,6 +15,11 @@ $(BUILD_DIR)/$(BIN): $(OBJS)
 
 .DELETE_ON_ERROR: 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+.DELETE_ON_ERROR: 
+$(BUILD_DIR)/%.o: $(SRC_DIR)/modules/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
