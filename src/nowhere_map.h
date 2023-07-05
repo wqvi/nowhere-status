@@ -5,14 +5,18 @@
 
 struct nowhere_node;
 
-typedef struct nowhere_map *nowhere_map_t;
+struct nowhere_map {
+	size_t count;
+	struct nowhere_node *head;
+	struct nowhere_node *entries;
+};
 
-int nowhere_map_create(nowhere_map_t *_map, size_t _count);
+int nowhere_map_create(struct nowhere_map **_map, size_t _count);
 
-void nowhere_map_put(nowhere_map_t _map, struct nowhere_node *_node);
+struct nowhere_node *nowhere_map_put(struct nowhere_map *_map, struct nowhere_node *_node);
 
-struct nowhere_node *nowhere_map_get(nowhere_map_t _map, const char *_name);
+struct nowhere_node *nowhere_map_get(struct nowhere_map *_map, const char *_name);
 
-void nowhere_map_print(nowhere_map_t _map);
+void nowhere_map_print(struct nowhere_map *_map);
 
 #endif //NOWHERE_MAP_H

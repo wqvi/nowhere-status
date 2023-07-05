@@ -4,11 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct nowhere_map {
-	size_t count;
-	struct nowhere_node *entries;
-};
-
 static void nowhere_print_node(struct nowhere_node *_node) {
 	printf("{");
 	printf("\"name\":\"%s\",", _node->name);
@@ -21,6 +16,7 @@ static void nowhere_print_node(struct nowhere_node *_node) {
 		printf("\"full_text\":\"%s\"", _node->alt_text);
 	}
 	printf("}");
+	if (_node->next != NULL) printf(",");
 }
 
 static size_t nowhere_bezout_hash(const char *_key) {
@@ -32,7 +28,7 @@ static size_t nowhere_bezout_hash(const char *_key) {
 	return hash;
 }
 
-int nowhere_map_create(nowhere_map_t *_map, size_t _count) {
+int nowhere_map_create(struct nowhere_map **_map, size_t _count) {
 	size_t size = sizeof(struct nowhere_map) + _count * sizeof(struct nowhere_node);
 
 	char *ptr = malloc(size);
@@ -40,7 +36,7 @@ int nowhere_map_create(nowhere_map_t *_map, size_t _count) {
 
 	memset(ptr, 0, size);
 
-	nowhere_map_t map = (nowhere_map_t)ptr;
+	struct nowhere_map *map = (struct nowhere_map *)ptr;
 	map->count = _count;
 	map->entries = (struct nowhere_node *)(ptr + sizeof(struct nowhere_map));
 
@@ -49,15 +45,19 @@ int nowhere_map_create(nowhere_map_t *_map, size_t _count) {
 	return 0;
 }
 
-void nowhere_map_put(nowhere_map_t _map, struct nowhere_node *_node) {
+struct nowhere_node *nowhere_map_put(struct nowhere_map *_map, struct nowhere_node *_node) {
 	size_t hash = nowhere_bezout_hash(_node->name);
 	size_t index = (hash % _map->count);
 	
 	struct nowhere_node *node = &_map->entries[index];
 
 	if (strcmp(_node->name, node->name) == 0) {
-		memcpy(node, _node, sizeof(struct nowhere_node) - sizeof(int));
-		return;
+		int usage = node->usage;
+		struct nowhere_node *next = node->next;
+		memcpy(node, _node, sizeof(struct nowhere_node));
+		node->usage = usage;
+		node->next = next;
+		return node;
 	}
 
 	int i = 1;
@@ -66,10 +66,16 @@ void nowhere_map_put(nowhere_map_t _map, struct nowhere_node *_node) {
 		i++;
 	}
 
-	memcpy(&_map->entries[index], _node, sizeof(struct nowhere_node) - sizeof(int));
+	int usage = _map->entries[index].usage;
+	struct nowhere_node *next = _map->entries[index].next;
+	memcpy(&_map->entries[index], _node, sizeof(struct nowhere_node));
+	_map->entries[index].usage = usage;
+	_map->entries[index].next  = next;
+
+	return &_map->entries[index];
 }
 
-struct nowhere_node *nowhere_map_get(nowhere_map_t _map, const char *_name) {
+struct nowhere_node *nowhere_map_get(struct nowhere_map *_map, const char *_name) {
 	size_t hash = nowhere_bezout_hash(_name);
 	size_t index = (hash % _map->count);
 
@@ -88,13 +94,12 @@ struct nowhere_node *nowhere_map_get(nowhere_map_t _map, const char *_name) {
 	return &_map->entries[index];
 }
 
-void nowhere_map_print(nowhere_map_t _map) {
+void nowhere_map_print(struct nowhere_map *_map) {
 	printf(",[");
-	for (int i = 0; i < _map->count; i++) {
-		nowhere_print_node(&_map->entries[i]);
-		if (i != _map->count - 1) {
-			printf(",");
-		}
+	struct nowhere_node *head = _map->head;
+	while (head != NULL) {
+		nowhere_print_node(head);
+		head = head->next;
 	}
 	printf("]\n");
 	fflush(stdout);
