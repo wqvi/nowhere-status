@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void nowhere_print_node(struct nowhere_node *_node) {
+static void print_node(struct nowhere_node *_node) {
 	printf("{");
 	printf("\"name\":\"%s\",", _node->name);
 	if (_node->color._unused) {
@@ -19,13 +19,24 @@ static void nowhere_print_node(struct nowhere_node *_node) {
 	if (_node->next != NULL) printf(",");
 }
 
-static size_t nowhere_bezout_hash(const char *_key) {
+static size_t bezout_hash(const char *_key) {
 	size_t hash = 2;
 	while (*_key) {
 		hash = (hash * 3) ^ (_key[0] * 5);
 		_key++;
 	}
 	return hash;
+}
+
+static void quadratic_index(size_t *_index, struct nowhere_node *_entries, size_t _count, const char *_key) {
+	struct nowhere_node *current = &_entries[*_index];
+	int i = 0;
+
+	while (current->name[0] && strcmp(_key, current->name) != 0) {
+		*_index = (*_index + i * i) % _count;
+		i++;
+		current = &_entries[*_index]; 
+	}
 }
 
 int nowhere_map_create(struct nowhere_map **_map, size_t _count) {
@@ -46,7 +57,7 @@ int nowhere_map_create(struct nowhere_map **_map, size_t _count) {
 }
 
 struct nowhere_node *nowhere_map_put(struct nowhere_map *_map, struct nowhere_node *_node) {
-	size_t hash = nowhere_bezout_hash(_node->name);
+	size_t hash = bezout_hash(_node->name);
 	size_t index = (hash % _map->count);
 	
 	struct nowhere_node *node = &_map->entries[index];
@@ -60,11 +71,7 @@ struct nowhere_node *nowhere_map_put(struct nowhere_map *_map, struct nowhere_no
 		return node;
 	}
 
-	int i = 1;
-	while (_map->entries[index].name[0] && strcmp(_node->name, _map->entries[index].name) != 0) {
-		index = (index + i * i) % _map->count;
-		i++;
-	}
+	quadratic_index(&index, _map->entries, _map->count, _node->name);
 
 	int usage = _map->entries[index].usage;
 	struct nowhere_node *next = _map->entries[index].next;
@@ -76,7 +83,7 @@ struct nowhere_node *nowhere_map_put(struct nowhere_map *_map, struct nowhere_no
 }
 
 struct nowhere_node *nowhere_map_get(struct nowhere_map *_map, const char *_name) {
-	size_t hash = nowhere_bezout_hash(_name);
+	size_t hash = bezout_hash(_name);
 	size_t index = (hash % _map->count);
 
 	struct nowhere_node *node = &_map->entries[index];
@@ -85,11 +92,7 @@ struct nowhere_node *nowhere_map_get(struct nowhere_map *_map, const char *_name
 		return node;
 	}
 
-	int i = 1;
-	while (_map->entries[index].name[0] && strcmp(_name, _map->entries[index].name) != 0) {
-		index = (index + i * i) % _map->count;
-		i++;
-	}
+	quadratic_index(&index, _map->entries, _map->count, _name);
 
 	return &_map->entries[index];
 }
@@ -98,7 +101,7 @@ void nowhere_map_print(struct nowhere_map *_map) {
 	printf(",[");
 	struct nowhere_node *head = _map->head;
 	while (head != NULL) {
-		nowhere_print_node(head);
+		print_node(head);
 		head = head->next;
 	}
 	printf("]\n");
