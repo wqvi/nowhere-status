@@ -15,7 +15,7 @@ Usage: `nowhere-status [options]`
     
     -l STRING, --location=STRING    specify where weather is pulled from
     
-    -t NUMBERi, --thermal_zone=NUMBER
+    -t NUMBER, --thermal_zone=NUMBER
                                     specify cpu temperature zone found
                                     in /sys/class/thermal/thermal_zone[NUMBER]/temp
     

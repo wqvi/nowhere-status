@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 			// help
 			printf("Usage: %s [options]\n", argv[0]);
 			puts("\t-o, --offline\t\t\tdoes not retrieve weather info");
-			puts("\t-l, --location=STRING\t\tspecify where weather is pulled from");
+			puts("\t-l STRING, --location=STRING\tspecify where weather is pulled from");
 			puts("\t-t NUMBER, --thermal_zone=NUMBER");
 			puts("\t\t\t\t\tspecify cpu temperature zone");
 			puts("\t-i STRING, --ifname=STRING\tspecify wireless device");
