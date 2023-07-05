@@ -31,6 +31,7 @@ struct nowhere_node {
 	char full_text[NOWHERE_TXTSIZ];
 	char alt_text[NOWHERE_TXTSIZ];
 	struct nowhere_color color;
+	struct nowhere_node *next;
 	int usage;
 };
 
@@ -38,7 +39,7 @@ struct nowhere_swaybar {
 	int timerfd;
 	int weatherfd;
 	int epollfd;
-	nowhere_map_t map;
+	struct nowhere_map *map;
 	CURL *curl;
 	struct nowhere_config config;
 };

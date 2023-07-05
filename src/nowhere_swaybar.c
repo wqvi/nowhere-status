@@ -113,6 +113,42 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_conf
 	int amount = 6 - _config->offline;
 	if (nowhere_map_create(&_swaybar->map, amount) == -1) goto error;
 
+	struct nowhere_node node, *next, *prev;
+	memset(&node, 0, sizeof(struct nowhere_node));
+
+	snprintf(node.name, NOWHERE_NAMSIZ, "date");
+	next = nowhere_map_put(_swaybar->map, &node);
+	prev = next;
+
+	if (!_config->offline) {
+		snprintf(node.name, NOWHERE_NAMSIZ, "weather");
+		next = nowhere_map_put(_swaybar->map, &node);
+		next->next = prev;
+		prev = next;
+	}
+
+	snprintf(node.name, NOWHERE_NAMSIZ, "bat");
+	next = nowhere_map_put(_swaybar->map, &node);
+	next->next = prev;
+	prev = next;
+
+	snprintf(node.name, NOWHERE_NAMSIZ, "temp");
+	next = nowhere_map_put(_swaybar->map, &node);
+	next->next = prev;
+	prev = next;
+
+	snprintf(node.name, NOWHERE_NAMSIZ, "ram");
+	next = nowhere_map_put(_swaybar->map, &node);
+	next->next = prev;
+	prev = next;
+	
+	snprintf(node.name, NOWHERE_NAMSIZ, "wireless");
+	next = nowhere_map_put(_swaybar->map, &node);
+	next->next = prev;
+	prev = next;
+
+	_swaybar->map->head = next;
+
 	if (!_config->offline) {
 		if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK) goto error;
 
