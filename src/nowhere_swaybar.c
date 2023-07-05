@@ -15,16 +15,7 @@ static size_t curl_callback(char *_data, size_t _size, size_t _nitems, void *_bu
 		strncpy(_buffer, _data, NOWHERE_TXTSIZ);
 	}
 
-	// Definitely a naive implementation but the URL output
-	// will only have two _ because CURL is picky and won't take
-	// format='%C %w %t' and instead wants format=%C_%w_%t
-	// thus the buffer will look something like "Sunny 3km/h +17C"
 	size_t pos = strcspn(_buffer, "_");
-	if (pos != _size * _nitems && pos < NOWHERE_TXTSIZ) {
-		((char *)_buffer)[pos] = ' ';
-	}
-
-	pos = strcspn(_buffer, "_");
 	if (pos != _size * _nitems && pos < NOWHERE_TXTSIZ) {
 		((char *)_buffer)[pos] = ' ';
 	}
@@ -116,7 +107,7 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_conf
 		}
 
 		char wttr[64];
-		snprintf(wttr, 64, "https://wttr.in/%s?format=%%C_%%w_%%t", _config->location);
+		snprintf(wttr, 64, "https://wttr.in/%s?format=%%C_%%t", _config->location);
 		curl_easy_setopt(_swaybar->curl, CURLOPT_URL, wttr);
 		curl_easy_setopt(_swaybar->curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
 		curl_easy_setopt(_swaybar->curl, CURLOPT_WRITEFUNCTION, curl_callback);
