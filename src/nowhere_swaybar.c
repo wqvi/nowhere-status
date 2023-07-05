@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 static size_t curl_callback(char *_data, size_t _size, size_t _nitems, void *_buffer) {
+	memset(_buffer, 0, NOWHERE_TXTSIZ);
 	if (NOWHERE_TXTSIZ > _size * _nitems) {
 		strncpy(_buffer, _data, _size * _nitems);
 	} else {
