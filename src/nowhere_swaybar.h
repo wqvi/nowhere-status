@@ -2,7 +2,7 @@
 #define NOWHERE_SWAYBAR_H
 
 #include <curl/curl.h>
-#include "nowhere_map.h"
+#include "map.h"
 
 #ifndef NOWHERE_NAMSIZ
 #define NOWHERE_NAMSIZ 16
