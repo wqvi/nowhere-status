@@ -23,13 +23,7 @@ static size_t curl_callback(char *_data, size_t _size, size_t _nitems, void *_bu
 	return _size * _nitems;
 }
 
-int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config) {
-	if (!_swaybar || !_config) return -1;
-
-	// The integral part of the program
-	// if one of these parts that need to be initialized fail
-	// the application WILL not run
-
+static int nowhere_swaybar_fd(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config) {
 	struct timespec now;
 	if (clock_gettime(CLOCK_REALTIME, &now) == -1) return -1;
 
@@ -93,6 +87,28 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_conf
 		if (epoll_ctl(epollfd, EPOLL_CTL_ADD, weatherfd, &weather_event) < 0) goto error;
 	}
 
+	_swaybar->timerfd = timerfd;
+	if (!_config->offline) _swaybar->weatherfd = weatherfd;
+	else _swaybar->weatherfd = 0;
+	_swaybar->epollfd = epollfd;
+
+	return 0;
+error:
+	close(timerfd);
+	if (!_config->offline) close(weatherfd);
+	close(epollfd);
+	return -1;
+}
+
+int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config) {
+	if (!_swaybar || !_config) return -1;
+
+	// The integral part of the program
+	// if one of these parts that need to be initialized fail
+	// the application WILL not run
+	
+	if (nowhere_swaybar_fd(_swaybar, _config) == -1) goto error; 
+	
 	// battery, date, network, ram, temperature, weather
 	int amount = 6 - _config->offline;
 	if (nowhere_map_create(&_swaybar->map, amount) == -1) goto error;
@@ -111,21 +127,15 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_conf
 		curl_easy_setopt(_swaybar->curl, CURLOPT_URL, wttr);
 		curl_easy_setopt(_swaybar->curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
 		curl_easy_setopt(_swaybar->curl, CURLOPT_WRITEFUNCTION, curl_callback);
-		_swaybar->weatherfd = weatherfd;
-	} else {
-		_swaybar->weatherfd = 0;
 	}
-
-	_swaybar->timerfd = timerfd;
-	_swaybar->epollfd = epollfd;
 
 	memcpy(&_swaybar->config, _config, sizeof(struct nowhere_config));
 	
 	return 0;
 error:
-	close(timerfd);
-	if (!_config->offline) close(weatherfd);
-	close(epollfd);
+	close(_swaybar->timerfd);
+	if (!_config->offline) close(_swaybar->weatherfd);
+	close(_swaybar->epollfd);
 	return -1;
 }
 
