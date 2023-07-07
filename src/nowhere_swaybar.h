@@ -27,12 +27,12 @@ struct nowhere_color {
 };
 
 struct nowhere_node {
+	int usage;
+	struct nowhere_node *next;
 	char name[NOWHERE_NAMSIZ];
 	char full_text[NOWHERE_TXTSIZ];
-	char alt_text[NOWHERE_TXTSIZ];
 	struct nowhere_color color;
-	struct nowhere_node *next;
-	int usage;
+	char alt_text[NOWHERE_TXTSIZ];
 };
 
 struct nowhere_swaybar {
