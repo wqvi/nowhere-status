@@ -19,11 +19,22 @@ struct nowhere_config {
 	char location[16];
 };
 
-struct nowhere_color {
+struct color {
 	unsigned char r;
 	unsigned char g;
 	unsigned char b;
 	char _unused;
+};
+
+enum node_flags {
+	NOWHERE_NODE_DEFAULT = 0x1,
+	NOWHERE_NODE_COLOR = 0x2,
+	NOWHERE_NODE_ALT = 0x4
+};
+
+struct node_info {
+	int flags;
+	char name[NOWHERE_NAMSIZ];
 };
 
 struct nowhere_node {
@@ -31,7 +42,7 @@ struct nowhere_node {
 	struct nowhere_node *next;
 	char name[NOWHERE_NAMSIZ];
 	char full_text[NOWHERE_TXTSIZ];
-	struct nowhere_color color;
+	struct color color;
 	char alt_text[NOWHERE_TXTSIZ];
 };
 
