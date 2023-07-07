@@ -5,13 +5,15 @@
 
 struct nowhere_node;
 
+struct node_info;
+
 struct nowhere_map {
 	size_t count;
 	struct nowhere_node *head;
 	struct nowhere_node *entries;
 };
 
-int nowhere_map_create(struct nowhere_map **_map, size_t _count);
+int nowhere_map_create(struct nowhere_map **_map, struct node_info *_infos, size_t _count);
 
 struct nowhere_node *nowhere_map_put(struct nowhere_map *_map, struct nowhere_node *_node);
 

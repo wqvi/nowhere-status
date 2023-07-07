@@ -111,7 +111,7 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_conf
 	
 	// battery, date, network, ram, temperature, weather
 	int amount = 6 - _config->offline;
-	if (nowhere_map_create(&_swaybar->map, amount) == -1) goto error;
+	if (nowhere_map_create(&_swaybar->map, NULL, amount) == -1) goto error;
 	
 	if (!_config->offline) {
 		if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK) goto error;

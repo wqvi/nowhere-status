@@ -1,23 +1,18 @@
-#include "nowhere_map.h"
+#include "map.h"
 #include "nowhere_swaybar.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-static void print_node(struct nowhere_node *_node) {
-	printf("{");
-	printf("\"name\":\"%s\",", _node->name);
-	if (_node->color._unused) {
-		printf("\"color\":\"#%02x%02x%02x\",", _node->color.r, _node->color.g, _node->color.b);
-	}
-	if (!_node->usage) {
-		printf("\"full_text\":\"%s\"", _node->full_text);
-	} else {
-		printf("\"full_text\":\"%s\"", _node->alt_text);
-	}
-	printf("}");
-	if (_node->next != NULL) printf(",");
-}
+struct head {
+	int flags;
+	struct head *next;
+};
+
+struct body {
+	char name[NOWHERE_NAMSIZ];
+	char full_text[NOWHERE_TXTSIZ];
+};
 
 static size_t bezout_hash(const char *_key) {
 	size_t hash = 2;
@@ -39,7 +34,7 @@ static void quadratic_index(size_t *_index, struct nowhere_node *_entries, size_
 	}
 }
 
-int nowhere_map_create(struct nowhere_map **_map, size_t _count) {
+int nowhere_map_create(struct nowhere_map **_map, struct node_info *_infos, size_t _count) {
 	size_t size = sizeof(struct nowhere_map) + _count * sizeof(struct nowhere_node);
 
 	char *ptr = malloc(size);
@@ -63,21 +58,21 @@ struct nowhere_node *nowhere_map_put(struct nowhere_map *_map, struct nowhere_no
 	struct nowhere_node *node = &_map->entries[index];
 
 	if (strcmp(_node->name, node->name) == 0) {
-		int usage = node->usage;
-		struct nowhere_node *next = node->next;
+		//int usage = node->usage;
+		//struct nowhere_node *next = node->next;
 		memcpy(node, _node, sizeof(struct nowhere_node));
-		node->usage = usage;
-		node->next = next;
+		//node->usage = usage;
+		//node->next = next;
 		return node;
 	}
 
 	quadratic_index(&index, _map->entries, _map->count, _node->name);
 
-	int usage = _map->entries[index].usage;
-	struct nowhere_node *next = _map->entries[index].next;
+	//int usage = _map->entries[index].usage;
+	//struct nowhere_node *next = _map->entries[index].next;
 	memcpy(&_map->entries[index], _node, sizeof(struct nowhere_node));
-	_map->entries[index].usage = usage;
-	_map->entries[index].next  = next;
+	//_map->entries[index].usage = usage;
+	//_map->entries[index].next  = next;
 
 	return &_map->entries[index];
 }
@@ -99,10 +94,18 @@ struct nowhere_node *nowhere_map_get(struct nowhere_map *_map, const char *_name
 
 void nowhere_map_print(struct nowhere_map *_map) {
 	printf(",[");
-	struct nowhere_node *head = _map->head;
-	while (head != NULL) {
-		print_node(head);
-		head = head->next;
+	for (int i = 0; i < _map->count; i++) {
+		struct nowhere_node *node = &_map->entries[i];
+		
+		printf("{");
+		printf("\"name\":\"%s\",", node->name);
+		printf("\"full_text\":\"%s\",", node->full_text);
+		if (node->color._unused) printf("\"color\":\"#%02x%02x%02x\",", node->color.r, node->color.g, node->color.b);
+		printf("}");
+
+		if (i != _map->count - 1) {
+			printf(",");
+		}
 	}
 	printf("]\n");
 	fflush(stdout);
