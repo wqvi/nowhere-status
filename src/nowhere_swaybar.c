@@ -108,10 +108,18 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_conf
 	// the application WILL not run
 	
 	if (nowhere_swaybar_fd(_swaybar, _config) == -1) goto error; 
-	
+
+	struct node_info infos[5] = {
+		{ .flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_ALT, .name = "date" },
+		{ .flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR, .name = "bat" },
+		{ .flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR, .name = "temp" },
+		{ .flags = NOWHERE_NODE_DEFAULT, .name = "ram" },
+		{ .flags = NOWHERE_NODE_DEFAULT, .name = "wireless" }
+	};
+
 	// battery, date, network, ram, temperature, weather
 	int amount = 6 - _config->offline;
-	if (nowhere_map_create(&_swaybar->map, NULL, amount) == -1) goto error;
+	if (nowhere_map_create(&_swaybar->map, infos, amount) == -1) goto error;
 	
 	if (!_config->offline) {
 		if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK) goto error;
@@ -178,7 +186,7 @@ static int nowhere_swaybar_poll(struct nowhere_swaybar *_swaybar, struct nowhere
 				struct nowhere_node *node = nowhere_map_get(_swaybar->map, name);
 				// something something usage flags
 				if (node) {
-					if (node->alt_text[0] != '\0') node->usage = !node->usage;
+					if (node->alt_text[0] != '\0') node->flags = !node->flags;
 				}
 			}
 		} else if (event->data.fd == _swaybar->timerfd) {

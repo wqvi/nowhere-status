@@ -38,7 +38,7 @@ struct node_info {
 };
 
 struct nowhere_node {
-	int usage;
+	int flags;
 	struct nowhere_node *next;
 	char name[NOWHERE_NAMSIZ];
 	char full_text[NOWHERE_TXTSIZ];
