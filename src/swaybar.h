@@ -56,7 +56,7 @@ struct nowhere_swaybar {
 	int timerfd;
 	int weatherfd;
 	int epollfd;
-	struct nowhere_map *map;
+	struct node *head;
 	CURL *curl;
 	struct nowhere_config config;
 };
