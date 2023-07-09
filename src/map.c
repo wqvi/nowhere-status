@@ -4,20 +4,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-int nowhere_map_create(struct nowhere_map **_map, struct node_info *_infos, size_t _count) {
-	size_t size = sizeof(struct nowhere_map) + _count * sizeof(struct node);
+int nowhere_map_create(struct node **_head, struct node_info *_infos, size_t _count) {
+	size_t size = _count * sizeof(struct node);
 	void *ptr;
-	if (!(ptr = calloc(1, size))) return -1;
-	memset(ptr, 0, size);
-
-	struct nowhere_map *map = ptr;
-	map->count = _count;
-	map->entries = (struct node *)(map + 1);
+	if (!(ptr = malloc(size))) return -1;
 
 	for (int i = 0; i < _count; i++) {
 		struct node_info *info = &_infos[i];
-		struct node *node = &map->entries[i];
-		struct node *next = &map->entries[i + 1];
+		struct node *node = (struct node *)ptr + i;
+		struct node *next = node + 1;
 		if (i == _count - 1) next = NULL;
 
 		node->flags = info->flags & ~NOWHERE_NODE_ALT;
@@ -26,13 +21,13 @@ int nowhere_map_create(struct nowhere_map **_map, struct node_info *_infos, size
 		memcpy(node->name, info->name, NOWHERE_NAMSIZ);
 	}
 
-	*_map = map;
+	*_head = ptr;
 	
 	return 0;
 }
 
-void nowhere_map_put(struct nowhere_map *_map, struct node *_node) {
-	struct node *head = _map->entries;
+void nowhere_map_put(struct node *_head, struct node *_node) {
+	struct node *head = _head;
 	while (head != NULL) {
 		if (strcmp(head->name, _node->name) == 0) {
 			if (head->flags & NOWHERE_NODE_DEFAULT) memcpy(head->full_text, _node->full_text, NOWHERE_TXTSIZ);
@@ -44,8 +39,8 @@ void nowhere_map_put(struct nowhere_map *_map, struct node *_node) {
 	}
 }
 
-struct node *nowhere_map_get(struct nowhere_map *_map, const char *_name) {
-	struct node *head = _map->entries;
+struct node *nowhere_map_get(struct node *_head, const char *_name) {
+	struct node *head = _head;
 	while (head != NULL) {
 		if (strcmp(head->name, _name) == 0) {
 			return head;
@@ -55,9 +50,9 @@ struct node *nowhere_map_get(struct nowhere_map *_map, const char *_name) {
 	return NULL;
 }
 
-void nowhere_map_print(struct nowhere_map *_map) {
+void nowhere_map_print(struct node *_head) {
 	printf(",[");
-	struct node *head = _map->entries;
+	struct node *head = _head;
 	while (head != NULL) {
 		printf("{");
 		printf("\"name\":\"%s\",", head->name);
