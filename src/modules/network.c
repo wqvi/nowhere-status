@@ -57,7 +57,6 @@ int nowhere_network(struct node *_node) {
 	struct sockaddr_in *in = (struct sockaddr_in *)&rq.u.ap_addr;
 	inet_ntop(AF_INET, &in->sin_addr, addr, INET_ADDRSTRLEN);
 
-	_node->flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_ALT;
 	snprintf(_node->name, NOWHERE_NAMSIZ, "wireless");
 	// I am ok with suppressing truncation warning
 	volatile size_t size = NOWHERE_TXTSIZ;

@@ -15,7 +15,6 @@ int nowhere_temperature(struct node *_node) {
 	int red = (1.0f - normal) * 255.0f;
 	int green = normal * 255.0f;
 
-	_node->flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR;
 	snprintf(_node->name, NOWHERE_NAMSIZ, "temp");
 	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%d\U000000B0C", temp);
 	_node->alt_text[0] = '\0';

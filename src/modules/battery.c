@@ -50,7 +50,6 @@ int nowhere_battery(struct node *_node) {
 	int red = normal * 255.0f;
 	int green = (1.0f - normal) * 255.0f;
 
-	_node->flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR;
 	snprintf(_node->name, NOWHERE_NAMSIZ, "bat");
 	snprintf(_node->full_text, NOWHERE_TXTSIZ, "BAT0 %d%% %s", capacity, status);
 	_node->alt_text[0] = '\0';
