@@ -54,10 +54,9 @@ void nowhere_map_put(struct nowhere_map *_map, struct nowhere_node *_node) {
 	struct nowhere_node *head = _map->entries;
 	while (head != NULL) {
 		if (strcmp(head->name, _node->name) == 0) {
-			head->flags = _node->flags;
-			memcpy(head->full_text, _node->full_text, NOWHERE_NAMSIZ);
-			memcpy(head->alt_text, _node->alt_text, NOWHERE_NAMSIZ);
-			memcpy(&head->color, &_node->color, sizeof(struct color));
+			if (head->flags & NOWHERE_NODE_DEFAULT) memcpy(head->full_text, _node->full_text, NOWHERE_TXTSIZ);
+			if (head->flags & NOWHERE_NODE_COLOR) memcpy(&head->color, &_node->color, sizeof(struct color));
+			if (head->flags & NOWHERE_NODE_ALT) memcpy(head->alt_text, _node->alt_text, NOWHERE_TXTSIZ);
 			break;
 		}
 		head = head->next;
@@ -81,7 +80,8 @@ void nowhere_map_print(struct nowhere_map *_map) {
 	while (head != NULL) {
 		printf("{");
 		printf("\"name\":\"%s\",", head->name);
-		printf("\"full_text\":\"%s\",", head->full_text);
+		if (head->flags & NOWHERE_NODE_ALT) printf("\"full_text\":\"%s\"", head->alt_text); 
+		else printf("\"full_text\":\"%s\",", head->full_text);
 		if (head->flags & NOWHERE_NODE_COLOR) printf("\"color\":\"#%02x%02x%02x\",", head->color.r, head->color.g, head->color.b);
 		printf("}");
 
