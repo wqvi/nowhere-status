@@ -1,4 +1,4 @@
-#include "map.h"
+#include "node.h"
 #include "swaybar.h"
 #include <stdio.h>
 #include <stdlib.h>
