@@ -110,11 +110,11 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_conf
 	if (nowhere_swaybar_fd(_swaybar, _config) == -1) goto error; 
 
 	struct node_info infos[5] = {
-		{ .flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_ALT, .name = "date" },
-		{ .flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR, .name = "bat" },
-		{ .flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR, .name = "temp" },
+		{ .flags = NOWHERE_NODE_DEFAULT, .name = "wireless" },
 		{ .flags = NOWHERE_NODE_DEFAULT, .name = "ram" },
-		{ .flags = NOWHERE_NODE_DEFAULT, .name = "wireless" }
+		{ .flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR, .name = "temp" },
+		{ .flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR, .name = "bat" },
+		{ .flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_ALT, .name = "date" }
 	};
 
 	// battery, date, network, ram, temperature, weather
