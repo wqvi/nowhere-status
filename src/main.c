@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 			break;
 		case 'l':
 			// location
-			strcpy(config.location, optarg);
+			snprintf(config.location, 16, "%s", (char *)optarg);
 			break;
 		case 'h':
 			// help
