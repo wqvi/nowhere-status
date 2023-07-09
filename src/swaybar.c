@@ -240,7 +240,6 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 	for (;;) {
 		struct node *head = _swaybar->map->entries;
 		while (head != NULL) {
-			// update function
 			head->fun(head);
 			head = head->next;
 		}
