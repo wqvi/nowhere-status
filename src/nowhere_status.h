@@ -9,11 +9,11 @@ int nowhere_battery(struct node *_node);
 
 int nowhere_date(struct node *_node);
 
-int nowhere_network(struct node *_node, const char *_ifname);
+int nowhere_network(struct node *_node);
 
 int nowhere_ram(struct node *_node);
 
-int nowhere_temperature(struct node *_node, int _zone);
+int nowhere_temperature(struct node *_node);
 
 int nowhere_weather(struct node *_node, CURL *curl, char *_buffer);
 

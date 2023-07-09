@@ -7,22 +7,27 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-static int nowhere_resolve_ifname(struct iwreq *_rq, const char *_ifname) {
+static int nowhere_resolve_ifname(struct iwreq *_rq) {
 	struct ifaddrs *head;
 	if (getifaddrs(&head)) return -1;
 	
 	for (struct ifaddrs *list = head; list != NULL; list = list->ifa_next) {
 		// skip loopback device
-		if (!strcmp(list->ifa_name, "lo")) continue;
+		if (strcmp(list->ifa_name, "lo") == 0) continue;
+		
+		// skip ipv6 interface
+		if (strcmp(list->ifa_name, "sit0@NONE") == 0) continue;
 
 		// prioritize vpn display
 		if (!strcmp(list->ifa_name, "wg0")) {
 			strncpy(_rq->ifr_name, list->ifa_name, IFNAMSIZ);
 			break;
 		}
-
-		// validate provided ifname
-		if (!strcmp(list->ifa_name, _ifname)) strncpy(_rq->ifr_name, _ifname, IFNAMSIZ);
+		
+		if (list->ifa_addr->sa_family == AF_INET) {
+			strncpy(_rq->ifr_name, list->ifa_name, IFNAMSIZ);
+			_rq->u.addr.sa_family = AF_INET;
+		}
 	}
 
 	freeifaddrs(head);
@@ -30,15 +35,14 @@ static int nowhere_resolve_ifname(struct iwreq *_rq, const char *_ifname) {
 	return 0;
 }
 
-int nowhere_network(struct node *_node, const char *_ifname) {
+int nowhere_network(struct node *_node) {
 	struct iwreq rq;
-	if (nowhere_resolve_ifname(&rq, _ifname) == -1) return -1;
+	if (nowhere_resolve_ifname(&rq) == -1) return -1;
 	
 	int fd = socket(AF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0);
 	if (fd == -1) return -1;
 
 	// Converts numerical ip address to string address
-	rq.u.addr.sa_family = AF_INET;
 	if (ioctl(fd, SIOCGIFADDR, &rq) < 0) return -1;
 
 	char addr[INET_ADDRSTRLEN];
@@ -47,7 +51,7 @@ int nowhere_network(struct node *_node, const char *_ifname) {
 
 	_node->flags = NOWHERE_NODE_DEFAULT;
 	snprintf(_node->name, NOWHERE_NAMSIZ, "wireless");
-	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%s %s", _ifname, addr);
+	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%s %s", rq.ifr_name, addr);
 	_node->alt_text[0] = '\0';
 
 	close(fd);

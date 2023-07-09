@@ -3,12 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int nowhere_temperature(struct node *_node, int zone) {
-	char file[128];
-	snprintf(file, 128, "/sys/class/thermal/thermal_zone%d/temp", zone);
+int nowhere_temperature(struct node *_node) {
 	char buffer[4096];
 	
-	if (nowhere_device_read(buffer, 4096, file) == -1) return -1;
+	if (nowhere_device_read(buffer, 4096, "/sys/class/thermal/thermal_zone0/temp") == -1) return -1;
 
 	int temp = (int)(strtod(buffer, NULL) / 1000.0);
 
