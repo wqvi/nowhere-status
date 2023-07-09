@@ -4,26 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static size_t bezout_hash(const char *_key) {
-	size_t hash = 2;
-	while (*_key) {
-		hash = (hash * 3) ^ (_key[0] * 5);
-		_key++;
-	}
-	return hash;
-}
-
-static void quadratic_index(size_t *_index, struct nowhere_node *_entries, size_t _count, const char *_key) {
-	struct nowhere_node *current = &_entries[*_index];
-	int i = 0;
-
-	while (current->name[0] && strcmp(_key, current->name) != 0) {
-		*_index = (*_index + i * i) % _count;
-		i++;
-		current = &_entries[*_index]; 
-	}
-}
-
 int nowhere_map_create(struct nowhere_map **_map, struct node_info *_infos, size_t _count) {
 	size_t size = sizeof(struct nowhere_map) + _count * sizeof(struct nowhere_node);
 	void *ptr;
