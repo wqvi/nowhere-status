@@ -110,11 +110,31 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_conf
 	if (nowhere_swaybar_fd(_swaybar, _config) == -1) goto error; 
 
 	struct node_info infos[5] = {
-		{ .flags = NOWHERE_NODE_DEFAULT, .name = "wireless" },
-		{ .flags = NOWHERE_NODE_DEFAULT, .name = "ram" },
-		{ .flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR, .name = "temp" },
-		{ .flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR, .name = "bat" },
-		{ .flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_ALT, .name = "date" }
+		{ 
+			.flags = NOWHERE_NODE_DEFAULT, 
+			.name = "wireless",
+			.fun = nowhere_network
+		},
+		{ 
+			.flags = NOWHERE_NODE_DEFAULT,
+			.name = "ram",
+			.fun = nowhere_ram
+		},
+		{
+			.flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR,
+			.name = "temp",
+			.fun = nowhere_temperature
+		},
+		{ 
+			.flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR, 
+			.name = "bat",
+			.fun = nowhere_battery
+		},
+		{ 
+			.flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_ALT, 
+			.name = "date",
+			.fun = nowhere_date
+		}
 	};
 
 	// battery, date, network, ram, temperature, weather
@@ -218,13 +238,18 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 	struct epoll_event events[3];
 	puts("{\"version\":1,\"click_events\":true}\n[[]");
 	for (;;) {
-		nowhere_network(&cache, _swaybar->config.ifname);
+		struct node *head = _swaybar->map->entries;
+		while (head != NULL) {
+			// update function
+			head = head->next;
+		}
+		nowhere_network(&cache);
 		nowhere_map_put(_swaybar->map, &cache);
 
 		nowhere_ram(&cache);
 		nowhere_map_put(_swaybar->map, &cache);
 		
-		nowhere_temperature(&cache, _swaybar->config.zone);
+		nowhere_temperature(&cache);
 		nowhere_map_put(_swaybar->map, &cache);
 		
 		nowhere_battery(&cache);

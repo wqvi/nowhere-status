@@ -32,18 +32,20 @@ enum node_flags {
 	NOWHERE_NODE_ALT = 0x4
 };
 
+struct node;
+
+typedef int (*update)(struct node *);
+
 struct node_info {
 	int flags;
 	char name[NOWHERE_NAMSIZ];
+	update fun;
 };
-
-struct node;
-
-typedef int (*node_module)(struct node *);
 
 struct node {
 	int flags;
 	struct node *next;
+	update fun;
 	char name[NOWHERE_NAMSIZ];
 	char full_text[NOWHERE_TXTSIZ];
 	struct color color;
