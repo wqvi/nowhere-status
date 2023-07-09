@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int nowhere_weather(struct nowhere_node *_node, CURL *curl, char *_buffer) {
+int nowhere_weather(struct node *_node, CURL *curl, char *_buffer) {
 	// 3600 seconds, one hour
 	// use timerfd
 	if (curl_easy_perform(curl) != CURLE_OK) return -1;

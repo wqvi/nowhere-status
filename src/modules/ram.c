@@ -7,7 +7,7 @@ static int nowhere_line_cmp(const char *_haystack, const char *_needle) {
 	return (strncmp(_haystack, _needle, strlen(_needle)) == 0);
 }
 
-int nowhere_ram(struct nowhere_node *_node) {
+int nowhere_ram(struct node *_node) {
 	long double memtotal = 0;
 	long double memfree = 0;
 	long double buffers = 0;

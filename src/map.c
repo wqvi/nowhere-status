@@ -5,19 +5,19 @@
 #include <string.h>
 
 int nowhere_map_create(struct nowhere_map **_map, struct node_info *_infos, size_t _count) {
-	size_t size = sizeof(struct nowhere_map) + _count * sizeof(struct nowhere_node);
+	size_t size = sizeof(struct nowhere_map) + _count * sizeof(struct node);
 	void *ptr;
 	if (!(ptr = calloc(1, size))) return -1;
 	memset(ptr, 0, size);
 
 	struct nowhere_map *map = ptr;
 	map->count = _count;
-	map->entries = (struct nowhere_node *)(map + 1);
+	map->entries = (struct node *)(map + 1);
 
 	for (int i = 0; i < _count; i++) {
 		struct node_info *info = &_infos[i];
-		struct nowhere_node *node = &map->entries[i];
-		struct nowhere_node *next = &map->entries[i + 1];
+		struct node *node = &map->entries[i];
+		struct node *next = &map->entries[i + 1];
 		if (i == _count - 1) next = NULL;
 
 		node->flags = info->flags;
@@ -30,8 +30,8 @@ int nowhere_map_create(struct nowhere_map **_map, struct node_info *_infos, size
 	return 0;
 }
 
-void nowhere_map_put(struct nowhere_map *_map, struct nowhere_node *_node) {
-	struct nowhere_node *head = _map->entries;
+void nowhere_map_put(struct nowhere_map *_map, struct node *_node) {
+	struct node *head = _map->entries;
 	while (head != NULL) {
 		if (strcmp(head->name, _node->name) == 0) {
 			if (head->flags & NOWHERE_NODE_DEFAULT) memcpy(head->full_text, _node->full_text, NOWHERE_TXTSIZ);
@@ -43,8 +43,8 @@ void nowhere_map_put(struct nowhere_map *_map, struct nowhere_node *_node) {
 	}
 }
 
-struct nowhere_node *nowhere_map_get(struct nowhere_map *_map, const char *_name) {
-	struct nowhere_node *head = _map->entries;
+struct node *nowhere_map_get(struct nowhere_map *_map, const char *_name) {
+	struct node *head = _map->entries;
 	while (head != NULL) {
 		if (strcmp(head->name, _name) == 0) {
 			return head;
@@ -56,7 +56,7 @@ struct nowhere_node *nowhere_map_get(struct nowhere_map *_map, const char *_name
 
 void nowhere_map_print(struct nowhere_map *_map) {
 	printf(",[");
-	struct nowhere_node *head = _map->entries;
+	struct node *head = _map->entries;
 	while (head != NULL) {
 		printf("{");
 		printf("\"name\":\"%s\",", head->name);

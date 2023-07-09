@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int nowhere_temperature(struct nowhere_node *_node, int zone) {
+int nowhere_temperature(struct node *_node, int zone) {
 	char file[128];
 	snprintf(file, 128, "/sys/class/thermal/thermal_zone%d/temp", zone);
 	char buffer[4096];

@@ -37,9 +37,13 @@ struct node_info {
 	char name[NOWHERE_NAMSIZ];
 };
 
-struct nowhere_node {
+struct node;
+
+typedef int (*node_module)(struct node *);
+
+struct node {
 	int flags;
-	struct nowhere_node *next;
+	struct node *next;
 	char name[NOWHERE_NAMSIZ];
 	char full_text[NOWHERE_TXTSIZ];
 	struct color color;

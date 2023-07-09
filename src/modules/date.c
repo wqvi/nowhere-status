@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <time.h>
 
-int nowhere_date(struct nowhere_node *_node) {
+int nowhere_date(struct node *_node) {
 	time_t now = time(NULL);
 	struct tm *tm = localtime(&now);
 	if (tm == NULL) return -1;

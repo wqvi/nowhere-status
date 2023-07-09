@@ -173,7 +173,7 @@ static void nowhere_find_node_name(char *_buffer, char *_name) {
 	} while ((line = strtok(NULL, "\n")));
 }
 
-static int nowhere_swaybar_poll(struct nowhere_swaybar *_swaybar, struct nowhere_node *_cache, struct epoll_event *_events, char *_buffer) {
+static int nowhere_swaybar_poll(struct nowhere_swaybar *_swaybar, struct node *_cache, struct epoll_event *_events, char *_buffer) {
 	int avail = epoll_wait(_swaybar->epollfd, _events, 3 - _swaybar->config.offline, -1);
 	for (int i = 0; i < avail; i++) {
 		struct epoll_event *event = &_events[i];
@@ -183,7 +183,7 @@ static int nowhere_swaybar_poll(struct nowhere_swaybar *_swaybar, struct nowhere
 			char name[16] = "\0";
 			nowhere_find_node_name(buffer, name);
 			if (name[0] != '\0') {
-				struct nowhere_node *node = nowhere_map_get(_swaybar->map, name);
+				struct node *node = nowhere_map_get(_swaybar->map, name);
 				if (node) {
 					if (node->alt_text[0] != '\0') node->flags ^= NOWHERE_NODE_ALT;
 				}
@@ -214,7 +214,7 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 		curl_easy_setopt(_swaybar->curl, CURLOPT_WRITEDATA, (void*)weather);
 	}
 
-	struct nowhere_node cache;
+	struct node cache;
 	struct epoll_event events[3];
 	puts("{\"version\":1,\"click_events\":true}\n[[]");
 	for (;;) {
