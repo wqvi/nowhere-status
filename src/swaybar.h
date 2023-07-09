@@ -14,8 +14,6 @@
 
 struct nowhere_config {
 	int offline;
-	int zone;
-	char ifname[16];
 	char location[16];
 };
 
