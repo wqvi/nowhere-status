@@ -241,23 +241,10 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 		struct node *head = _swaybar->map->entries;
 		while (head != NULL) {
 			// update function
+			head->fun(head);
 			head = head->next;
 		}
-		nowhere_network(&cache);
-		nowhere_map_put(_swaybar->map, &cache);
-
-		nowhere_ram(&cache);
-		nowhere_map_put(_swaybar->map, &cache);
 		
-		nowhere_temperature(&cache);
-		nowhere_map_put(_swaybar->map, &cache);
-		
-		nowhere_battery(&cache);
-		nowhere_map_put(_swaybar->map, &cache);
-		
-		nowhere_date(&cache);
-		nowhere_map_put(_swaybar->map, &cache);
-
 		nowhere_swaybar_poll(_swaybar, &cache, events, weather);
 				
 		nowhere_map_print(_swaybar->map);

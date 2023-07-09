@@ -22,6 +22,7 @@ int nowhere_map_create(struct nowhere_map **_map, struct node_info *_infos, size
 
 		node->flags = info->flags;
 		node->next = next;
+		node->fun = info->fun;
 		memcpy(node->name, info->name, NOWHERE_NAMSIZ);
 	}
 
