@@ -184,9 +184,8 @@ static int nowhere_swaybar_poll(struct nowhere_swaybar *_swaybar, struct nowhere
 			nowhere_find_node_name(buffer, name);
 			if (name[0] != '\0') {
 				struct nowhere_node *node = nowhere_map_get(_swaybar->map, name);
-				// something something usage flags
 				if (node) {
-					if (node->alt_text[0] != '\0') node->flags = !node->flags;
+					if (node->alt_text[0] != '\0') node->flags ^= NOWHERE_NODE_ALT;
 				}
 			}
 		} else if (event->data.fd == _swaybar->timerfd) {
@@ -219,8 +218,6 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 	struct epoll_event events[3];
 	puts("{\"version\":1,\"click_events\":true}\n[[]");
 	for (;;) {
-		nowhere_swaybar_poll(_swaybar, &cache, events, weather);
-		
 		nowhere_network(&cache, _swaybar->config.ifname);
 		nowhere_map_put(_swaybar->map, &cache);
 
@@ -235,7 +232,9 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 		
 		nowhere_date(&cache);
 		nowhere_map_put(_swaybar->map, &cache);
-		
+
+		nowhere_swaybar_poll(_swaybar, &cache, events, weather);
+				
 		nowhere_map_print(_swaybar->map);
 	}
 }
