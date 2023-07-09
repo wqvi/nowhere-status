@@ -1,5 +1,5 @@
 #include "map.h"
-#include "nowhere_swaybar.h"
+#include "swaybar.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

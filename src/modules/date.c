@@ -1,4 +1,4 @@
-#include "nowhere_swaybar.h"
+#include "swaybar.h"
 #include <stdio.h>
 #include <time.h>
 

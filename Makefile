@@ -6,7 +6,7 @@ SRC_DIR := ./src
 CFLAGS = -I$(SRC_DIR) -O2 -pedantic -Wall -Wextra -Wno-sign-compare -std=gnu99
 LIBS = -lcurl -lm
 
-OBJS := build/main.o build/map.o build/io.o build/nowhere_swaybar.o \
+OBJS := build/main.o build/map.o build/io.o build/swaybar.o \
 	build/battery.o build/date.o build/network.o build/ram.o build/temperature.o build/weather.o
 
 .DELETE_ON_ERROR:
