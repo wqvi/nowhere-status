@@ -111,7 +111,7 @@ int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_conf
 
 	struct node_info infos[5] = {
 		{ 
-			.flags = NOWHERE_NODE_DEFAULT, 
+			.flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_ALT, 
 			.name = "wireless",
 			.fun = nowhere_network
 		},

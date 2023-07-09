@@ -43,17 +43,30 @@ int nowhere_network(struct node *_node) {
 	if (fd == -1) return -1;
 
 	// Converts numerical ip address to string address
-	if (ioctl(fd, SIOCGIFADDR, &rq) < 0) return -1;
+	if (ioctl(fd, SIOCGIFADDR, &rq) < 0) goto error;
+
+	// Get network essid
+	char essid[48]; // IW_ESSID_MAX_SIZE + 1 = 33 gross, yea yea yea the compiler is smarter than me
+	rq.u.essid.pointer = essid;
+	rq.u.essid.length = IW_ESSID_MAX_SIZE;
+	rq.u.essid.flags = 0;
+
+	if (ioctl(fd, SIOCGIWESSID, &rq) < 0) goto error;
 
 	char addr[INET_ADDRSTRLEN];
 	struct sockaddr_in *in = (struct sockaddr_in *)&rq.u.ap_addr;
 	inet_ntop(AF_INET, &in->sin_addr, addr, INET_ADDRSTRLEN);
 
-	_node->flags = NOWHERE_NODE_DEFAULT;
+	_node->flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_ALT;
 	snprintf(_node->name, NOWHERE_NAMSIZ, "wireless");
-	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%s %s", rq.ifr_name, addr);
-	_node->alt_text[0] = '\0';
+	// I am ok with suppressing truncation warning
+	volatile size_t size = NOWHERE_TXTSIZ;
+	snprintf(_node->full_text, size, "%s %s", rq.ifr_name, addr);
+	snprintf(_node->alt_text, size, "%s %s", rq.ifr_name, essid);
 
 	close(fd);
 	return 0;
+error:
+	close(fd);
+	return -1;
 }
