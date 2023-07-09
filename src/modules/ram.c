@@ -37,11 +37,11 @@ int nowhere_ram(struct nowhere_node *_node) {
 	// I hope your system is little endian
 	long double gb = 1 << 20;
 
+	_node->flags = NOWHERE_NODE_DEFAULT;
 	snprintf(_node->name, NOWHERE_NAMSIZ, "ram");
 	long double memused = (memtotal - memfree - buffers - cached) / gb;
 	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%.1LfGb/%.1LfGb", memused, memtotal / gb);
 	_node->alt_text[0] = '\0';
-	_node->color._unused = 0;
 
 	return 0;
 }
