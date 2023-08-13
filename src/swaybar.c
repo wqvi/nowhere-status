@@ -23,7 +23,7 @@ static size_t curl_callback(char *_data, size_t _size, size_t _nitems, void *_bu
 	return _size * _nitems;
 }
 
-static int nowhere_swaybar_fd(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config) {
+static int swaybar_fd(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config) {
 	struct timespec now;
 	if (clock_gettime(CLOCK_REALTIME, &now) == -1) return -1;
 
@@ -100,14 +100,14 @@ error:
 	return -1;
 }
 
-int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config) {
+int swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config) {
 	if (!_swaybar || !_config) return -1;
 
 	// The integral part of the program
 	// if one of these parts that need to be initialized fail
 	// the application WILL not run
 	
-	if (nowhere_swaybar_fd(_swaybar, _config) == -1) goto error; 
+	if (swaybar_fd(_swaybar, _config) == -1) goto error; 
 
 	struct node_info infos[5] = {
 		{ 
@@ -193,7 +193,7 @@ static void nowhere_find_node_name(char *_buffer, char *_name) {
 	} while ((line = strtok(NULL, "\n")));
 }
 
-static int nowhere_swaybar_poll(struct nowhere_swaybar *_swaybar, struct node *_cache, struct epoll_event *_events, char *_buffer) {
+static int swaybar_poll(struct nowhere_swaybar *_swaybar, struct node *_cache, struct epoll_event *_events, char *_buffer) {
 	int avail = epoll_wait(_swaybar->epollfd, _events, 3 - _swaybar->config.offline, -1);
 	for (int i = 0; i < avail; i++) {
 		struct epoll_event *event = &_events[i];
@@ -222,7 +222,7 @@ static int nowhere_swaybar_poll(struct nowhere_swaybar *_swaybar, struct node *_
 	return 0;
 }
 
-int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
+int swaybar_start(struct nowhere_swaybar *_swaybar) {
 	if (!_swaybar) return -1;
 
 	char weather[NOWHERE_TXTSIZ] = "Weather UNK";
@@ -244,13 +244,13 @@ int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar) {
 			head = head->next;
 		}
 		
-		nowhere_swaybar_poll(_swaybar, &cache, events, weather);
+		swaybar_poll(_swaybar, &cache, events, weather);
 				
 		nowhere_map_print(_swaybar->head);
 	}
 }
 
-void nowhere_swaybar_destroy(struct nowhere_swaybar *_swaybar) {
+void swaybar_destroy(struct nowhere_swaybar *_swaybar) {
 	if (!_swaybar) return;
 
 	close(_swaybar->epollfd);

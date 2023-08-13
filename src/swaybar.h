@@ -59,10 +59,10 @@ struct nowhere_swaybar {
 	struct nowhere_config config;
 };
 
-int nowhere_swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config);
+int swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config);
 
-int nowhere_swaybar_start(struct nowhere_swaybar *_swaybar);
+int swaybar_start(struct nowhere_swaybar *_swaybar);
 
-void nowhere_swaybar_destroy(struct nowhere_swaybar *_swaybar);
+void swaybar_destroy(struct nowhere_swaybar *_swaybar);
 
 #endif // NOWHERE_SWAYBAR_H
