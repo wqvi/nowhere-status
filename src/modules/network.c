@@ -102,8 +102,8 @@ int nowhere_network(struct node *_node) {
 	}
 
 	snprintf(_node->name, NOWHERE_NAMSIZ, "wireless");
-	snprintf(_node->full_text, size, "%s %s", rq.ifr_name, addr);
-	snprintf(_node->alt_text, size, "%s %d%%", essid, quality);
+	snprintf(_node->full_text, size, "%s %d%%", essid, quality);
+	snprintf(_node->alt_text, size, "%s %s", rq.ifr_name, addr);
 
 	close(fd);
 	return 0;

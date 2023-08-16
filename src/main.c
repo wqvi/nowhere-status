@@ -47,17 +47,17 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	struct nowhere_swaybar swaybar;
+	struct nowhere_swaybar *swaybar;
 	if (swaybar_create(&swaybar, &config) == -1) {
 		return EXIT_FAILURE;
 	}
 
-	if (swaybar_start(&swaybar) == -1) {
-		swaybar_destroy(&swaybar);
+	if (swaybar_start(swaybar) == -1) {
+		swaybar_destroy(swaybar);
 		return EXIT_FAILURE;
 	}
 
-	swaybar_destroy(&swaybar);
+	swaybar_destroy(swaybar);
 
 	return EXIT_SUCCESS; 
 }

@@ -7,107 +7,108 @@
 #include <sys/timerfd.h>
 #include <unistd.h>
 
-static size_t curl_callback(char *_data, size_t _size, size_t _nitems, void *_buffer) {
-	memset(_buffer, 0, NOWHERE_TXTSIZ);
-	if (NOWHERE_TXTSIZ > _size * _nitems) {
-		strncpy(_buffer, _data, _size * _nitems);
-	} else {
-		strncpy(_buffer, _data, NOWHERE_TXTSIZ);
+static int get_timespec(struct itimerspec *_timerspec) {
+	struct timespec now;
+	if (clock_gettime(CLOCK_REALTIME, &now) == -1) {
+		return 1;
 	}
 
-	size_t pos = strcspn(_buffer, "_");
-	if (pos != _size * _nitems && pos < NOWHERE_TXTSIZ) {
-		((char *)_buffer)[pos] = ' ';
-	}
+	_timerspec->it_interval.tv_sec = 60;
+	_timerspec->it_value.tv_sec = now.tv_sec;
 
-	return _size * _nitems;
+	return 0;
 }
 
-static int swaybar_fd(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config) {
-	struct timespec now;
-	if (clock_gettime(CLOCK_REALTIME, &now) == -1) return -1;
+static int create_timerfd(int *_timerfd) {
+	struct itimerspec timerspec = { 0 };
+	int timerfd;
 
-	struct itimerspec timerspec = {
-		.it_interval = { .tv_sec = 60, .tv_nsec = 0 },
-		.it_value = { .tv_sec = now.tv_sec, .tv_nsec = 0 }
-	};
-
-	int timerfd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC | TFD_NONBLOCK);
-	if (timerfd == -1) return -1;
+	if (get_timespec(&timerspec)) {
+		return 1;
+	}
+	
+	timerfd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC | TFD_NONBLOCK);
+	if (timerfd == -1) {
+		return 1;
+	}
 
 	if (timerfd_settime(timerfd, TFD_TIMER_ABSTIME, &timerspec, NULL) == -1) {
 		close(timerfd);
-		return -1;
+		return 1;
 	}
 
-	int weatherfd = 0;
-	if (!_config->offline) {
-		weatherfd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC | TFD_NONBLOCK);
-		if (weatherfd == -1) return -1;
+	*_timerfd = timerfd;
 
-		timerspec.it_interval.tv_sec = 3600; // only update weather every hour
+	return 0;
+}
 
-		if(timerfd_settime(weatherfd, TFD_TIMER_ABSTIME, &timerspec, NULL) == -1) {
-			close(timerfd);
-			close(weatherfd);
-			return -1;
-		}
-	}
-
-	int epollfd = epoll_create1(EPOLL_CLOEXEC);
-	if (epollfd == -1) {
-		close(timerfd);
-		close(weatherfd);
-		return -1;
-	}
-
+static int add_events(int _timerfd, int _epollfd) {
 	struct epoll_event stdin_event = {
 		.events = EPOLLIN,
-		.data = { .fd = STDIN_FILENO }
+		.data = {
+			.fd = STDIN_FILENO
+		}
 	};
-
 	struct epoll_event timer_event = {
 		.events = EPOLLIN | EPOLLET,
-		.data = { .fd = timerfd }
-	};
-
-	struct epoll_event weather_event = {
-		.events = EPOLLIN | EPOLLET,
-		.data = { .fd = weatherfd }
+		.data = {
+			.fd = _timerfd
+		}
 	};
 
 	// I found if STDIN_FILENO is added first then STDIN will actually
 	// be polled. If STDIN is after the other FDs it'll not recieve input
 	// properly
-	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, STDIN_FILENO, &stdin_event) < 0) goto error;
-
-	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, timerfd, &timer_event) < 0) goto error;
-	
-	if (!_config->offline) {
-		if (epoll_ctl(epollfd, EPOLL_CTL_ADD, weatherfd, &weather_event) < 0) goto error;
+	if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, STDIN_FILENO, &stdin_event) < 0) {
+		return 1;
 	}
 
+	if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, _timerfd, &timer_event) < 0) {
+		return 1;
+	}
+
+	return 0;
+}
+
+static int swaybar_fd(struct nowhere_swaybar *_swaybar) {
+	int timerfd;
+	int epollfd;
+
+	if (create_timerfd(&timerfd)) {
+		return -1;
+	}
+	
+	epollfd = epoll_create1(EPOLL_CLOEXEC);
+	if (epollfd == -1) {
+		close(timerfd);
+		return -1;
+	}
+
+	if (add_events(timerfd, epollfd)) {
+		close(timerfd);
+		close(epollfd);
+		return -1;
+	}
+		
 	_swaybar->timerfd = timerfd;
-	if (!_config->offline) _swaybar->weatherfd = weatherfd;
-	else _swaybar->weatherfd = 0;
 	_swaybar->epollfd = epollfd;
 
 	return 0;
-error:
-	close(timerfd);
-	if (!_config->offline) close(weatherfd);
-	close(epollfd);
-	return -1;
 }
 
-int swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config) {
-	if (!_swaybar || !_config) return -1;
+int swaybar_create(struct nowhere_swaybar **_swaybar, struct nowhere_config *_config) {
+	struct nowhere_swaybar *swaybar = malloc(sizeof(struct nowhere_swaybar));
+	if (!swaybar) {
+		return -1;
+	}
 
 	// The integral part of the program
 	// if one of these parts that need to be initialized fail
 	// the application WILL not run
 	
-	if (swaybar_fd(_swaybar, _config) == -1) goto error; 
+	if (swaybar_fd(swaybar) == -1) {
+		free(swaybar);
+	}
 
 	struct node_info infos[5] = {
 		{ 
@@ -138,33 +139,15 @@ int swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_config *_con
 	};
 
 	// battery, date, network, ram, temperature, weather
-	int amount = 6 - _config->offline;
-	if (nowhere_map_create(&_swaybar->head, infos, amount) == -1) goto error;
-	
-	if (!_config->offline) {
-		if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK) goto error;
-
-		_swaybar->curl = curl_easy_init();
-		if (_swaybar->curl == NULL) {
-			curl_global_cleanup();
-			goto error;
-		}
-
-		char wttr[64];
-		snprintf(wttr, 64, "https://wttr.in/%s?format=%%C_%%t", _config->location);
-		curl_easy_setopt(_swaybar->curl, CURLOPT_URL, wttr);
-		curl_easy_setopt(_swaybar->curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
-		curl_easy_setopt(_swaybar->curl, CURLOPT_WRITEFUNCTION, curl_callback);
+	if (nowhere_map_create(&swaybar->head, infos, 5) == -1) {
+		free(swaybar);
 	}
 
-	memcpy(&_swaybar->config, _config, sizeof(struct nowhere_config));
+	memcpy(&swaybar->config, _config, sizeof(struct nowhere_config));
+
+	*_swaybar = swaybar;
 	
 	return 0;
-error:
-	close(_swaybar->timerfd);
-	if (!_config->offline) close(_swaybar->weatherfd);
-	close(_swaybar->epollfd);
-	return -1;
 }
 
 static void nowhere_find_node_name(char *_buffer, char *_name) {
@@ -193,14 +176,18 @@ static void nowhere_find_node_name(char *_buffer, char *_name) {
 	} while ((line = strtok(NULL, "\n")));
 }
 
-static int swaybar_poll(struct nowhere_swaybar *_swaybar, struct node *_cache, struct epoll_event *_events, char *_buffer) {
-	int avail = epoll_wait(_swaybar->epollfd, _events, 3 - _swaybar->config.offline, -1);
+static int swaybar_poll(struct nowhere_swaybar *_swaybar, struct epoll_event *_events) {
+	int avail = epoll_wait(_swaybar->epollfd, _events, 2, -1);
 	for (int i = 0; i < avail; i++) {
 		struct epoll_event *event = &_events[i];
-		if (event->data.fd == STDIN_FILENO) {
+
+		if (event->data.fd == STDIN_FILENO) { // received click event
 			char buffer[BUFSIZ];
-			if (read(STDIN_FILENO, buffer, BUFSIZ) < 0) return -1;
-			char name[16] = "\0";
+			char name[16] = { 0 };
+			if (read(STDIN_FILENO, buffer, BUFSIZ) < 0) {
+				return -1;
+			}
+
 			nowhere_find_node_name(buffer, name);
 			if (name[0] != '\0') {
 				struct node *node = nowhere_map_get(_swaybar->head, name);
@@ -208,14 +195,11 @@ static int swaybar_poll(struct nowhere_swaybar *_swaybar, struct node *_cache, s
 					if (node->alt_text[0] != '\0') node->flags ^= NOWHERE_NODE_ALT;
 				}
 			}
-		} else if (event->data.fd == _swaybar->timerfd) {
+		} else if (event->data.fd == _swaybar->timerfd) { // update standard nodes timer event
 			uint64_t exp;
-			if (read(_swaybar->timerfd, &exp, sizeof(uint64_t)) < 0) return -1;
-		} else if (event->data.fd == _swaybar->weatherfd && !_swaybar->config.offline) {
-			uint64_t exp;
-			if (read(_swaybar->weatherfd, &exp, sizeof(uint64_t)) < 0) return -1;
-			nowhere_weather(_cache, _swaybar->curl, _buffer);
-			nowhere_map_put(_swaybar->head, _cache);
+			if (read(_swaybar->timerfd, &exp, sizeof(uint64_t)) < 0) {
+				return -1;
+			}
 		}
 	}
 
@@ -223,18 +207,10 @@ static int swaybar_poll(struct nowhere_swaybar *_swaybar, struct node *_cache, s
 }
 
 int swaybar_start(struct nowhere_swaybar *_swaybar) {
-	if (!_swaybar) return -1;
-
-	char weather[NOWHERE_TXTSIZ] = "Weather UNK";
-	if (!_swaybar->config.offline) {
-		// This is a workaround for hiding the buffer unnecessarily
-		// in this function stack.
-		// Mainly just want to keep it out of the swaybar struct because
-		// I thought it would be very out of place if the buffer was there
-		curl_easy_setopt(_swaybar->curl, CURLOPT_WRITEDATA, (void*)weather);
+	if (!_swaybar) {
+		return 1;
 	}
 
-	struct node cache;
 	struct epoll_event events[3];
 	puts("{\"version\":1,\"click_events\":true}\n[[]");
 	for (;;) {
@@ -244,17 +220,20 @@ int swaybar_start(struct nowhere_swaybar *_swaybar) {
 			head = head->next;
 		}
 		
-		swaybar_poll(_swaybar, &cache, events, weather);
+		swaybar_poll(_swaybar, events);
 				
 		nowhere_map_print(_swaybar->head);
 	}
+
+	return 0;
 }
 
 void swaybar_destroy(struct nowhere_swaybar *_swaybar) {
-	if (!_swaybar) return;
+	if (!_swaybar) {
+		return;
+	}
 
 	close(_swaybar->epollfd);
-	if (!_swaybar->config.offline) close(_swaybar->weatherfd);
 	close(_swaybar->timerfd);
 	free(_swaybar->head);
 }

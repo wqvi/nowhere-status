@@ -52,14 +52,13 @@ struct node {
 
 struct nowhere_swaybar {
 	int timerfd;
-	int weatherfd;
 	int epollfd;
 	struct node *head;
 	CURL *curl;
 	struct nowhere_config config;
 };
 
-int swaybar_create(struct nowhere_swaybar *_swaybar, struct nowhere_config *_config);
+int swaybar_create(struct nowhere_swaybar **_swaybar, struct nowhere_config *_config);
 
 int swaybar_start(struct nowhere_swaybar *_swaybar);
 
