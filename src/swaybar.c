@@ -75,19 +75,19 @@ static int swaybar_fd(struct nowhere_swaybar *_swaybar) {
 	int epollfd;
 
 	if (create_timerfd(&timerfd)) {
-		return -1;
+		return 1;
 	}
 	
 	epollfd = epoll_create1(EPOLL_CLOEXEC);
 	if (epollfd == -1) {
 		close(timerfd);
-		return -1;
+		return 1;
 	}
 
 	if (add_events(timerfd, epollfd)) {
 		close(timerfd);
 		close(epollfd);
-		return -1;
+		return 1;
 	}
 		
 	_swaybar->timerfd = timerfd;
@@ -96,18 +96,19 @@ static int swaybar_fd(struct nowhere_swaybar *_swaybar) {
 	return 0;
 }
 
-int swaybar_create(struct nowhere_swaybar **_swaybar, struct nowhere_config *_config) {
+int swaybar_create(struct nowhere_swaybar **_swaybar) {
 	struct nowhere_swaybar *swaybar = malloc(sizeof(struct nowhere_swaybar));
 	if (!swaybar) {
-		return -1;
+		return 1;
 	}
 
 	// The integral part of the program
 	// if one of these parts that need to be initialized fail
 	// the application WILL not run
 	
-	if (swaybar_fd(swaybar) == -1) {
+	if (swaybar_fd(swaybar)) {
 		free(swaybar);
+		return 1;
 	}
 
 	struct node_info infos[5] = {
@@ -141,39 +142,41 @@ int swaybar_create(struct nowhere_swaybar **_swaybar, struct nowhere_config *_co
 	// battery, date, network, ram, temperature, weather
 	if (nowhere_map_create(&swaybar->head, infos, 5) == -1) {
 		free(swaybar);
+		return 1;
 	}
-
-	memcpy(&swaybar->config, _config, sizeof(struct nowhere_config));
 
 	*_swaybar = swaybar;
 	
 	return 0;
 }
 
-static void nowhere_find_node_name(char *_buffer, char *_name) {
+static int find_node_name(char *_buffer, char *_name) {
 	char *line = strtok(_buffer, "\n");
+	char *end;
+	uintptr_t diff;
 	do {
-		// I personally am not a big fan of json parsing
-		// so in order to avoid using a library I do a little
-		// trickery here and just hash the name that is retrieved
-		// It's mildly hardcoded here but it seems the swaybar json
-		// protocol seems to be the same everywhere.
 		char *str = strstr(line, "name");
 		char *start;
-		if (str != NULL) {
-			str += strlen("name");
-			str += strlen("\": \"");
-			start = str;
-			char *end = strstr(start, "\"");
-			if (end != NULL) {
-				snprintf(_name, 16, "%s", start);
-				uintptr_t diff = end - start;
-				// null terminate early because hashing the name with
-				// trailing bits will not yield good results
-				_name[diff] = 0;
-			}
+		if (str == NULL) {
+			continue;
 		}
+		
+		str += strlen("name\": \"");
+		start = str;
+		end = strstr(start, "\"");
+		if (end == NULL) {
+			continue;
+		}
+		
+		diff = end - start;
+		snprintf(_name, 16, "%s", start);
+		// null terminate at point where name ends
+		_name[diff] = '\0';
+
+		return 1;
 	} while ((line = strtok(NULL, "\n")));
+
+	return 0;
 }
 
 static int swaybar_poll(struct nowhere_swaybar *_swaybar, struct epoll_event *_events) {
@@ -185,20 +188,21 @@ static int swaybar_poll(struct nowhere_swaybar *_swaybar, struct epoll_event *_e
 			char buffer[BUFSIZ];
 			char name[16] = { 0 };
 			if (read(STDIN_FILENO, buffer, BUFSIZ) < 0) {
-				return -1;
+				return 1;
 			}
 
-			nowhere_find_node_name(buffer, name);
-			if (name[0] != '\0') {
-				struct node *node = nowhere_map_get(_swaybar->head, name);
-				if (node) {
-					if (node->alt_text[0] != '\0') node->flags ^= NOWHERE_NODE_ALT;
-				}
+			if (!find_node_name(buffer, name)) {
+				return 1;
+			}
+
+			struct node *node = nowhere_map_get(_swaybar->head, name);
+			if (node) {
+				if (node->alt_text[0] != '\0') node->flags ^= NOWHERE_NODE_ALT;
 			}
 		} else if (event->data.fd == _swaybar->timerfd) { // update standard nodes timer event
 			uint64_t exp;
 			if (read(_swaybar->timerfd, &exp, sizeof(uint64_t)) < 0) {
-				return -1;
+				return 1;
 			}
 		}
 	}
@@ -220,7 +224,9 @@ int swaybar_start(struct nowhere_swaybar *_swaybar) {
 			head = head->next;
 		}
 		
-		swaybar_poll(_swaybar, events);
+		if (swaybar_poll(_swaybar, events)) {
+			return 1;
+		}
 				
 		nowhere_map_print(_swaybar->head);
 	}

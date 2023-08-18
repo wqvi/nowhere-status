@@ -12,16 +12,11 @@
 #define NOWHERE_TXTSIZ 32
 #endif
 
-struct nowhere_config {
-	int offline;
-	char location[16];
-};
-
 struct color {
 	unsigned char r;
 	unsigned char g;
 	unsigned char b;
-	char _unused;
+	unsigned char _unused;
 };
 
 enum node_flags {
@@ -54,11 +49,9 @@ struct nowhere_swaybar {
 	int timerfd;
 	int epollfd;
 	struct node *head;
-	CURL *curl;
-	struct nowhere_config config;
 };
 
-int swaybar_create(struct nowhere_swaybar **_swaybar, struct nowhere_config *_config);
+int swaybar_create(struct nowhere_swaybar **_swaybar);
 
 int swaybar_start(struct nowhere_swaybar *_swaybar);
 

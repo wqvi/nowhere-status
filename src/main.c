@@ -48,11 +48,11 @@ int main(int argc, char **argv) {
 	}
 
 	struct nowhere_swaybar *swaybar;
-	if (swaybar_create(&swaybar, &config) == -1) {
+	if (swaybar_create(&swaybar, &config)) {
 		return EXIT_FAILURE;
 	}
 
-	if (swaybar_start(swaybar) == -1) {
+	if (swaybar_start(swaybar)) {
 		swaybar_destroy(swaybar);
 		return EXIT_FAILURE;
 	}
