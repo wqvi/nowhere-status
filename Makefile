@@ -9,7 +9,7 @@ CFLAGS = -I$(SRC_DIR) -O2 -pedantic -Wall -Wextra -Wno-sign-compare -std=gnu99
 LIBS = -lcurl -lm
 
 OBJS := bin/main.o bin/node.o bin/io.o bin/swaybar.o \
-	bin/battery.o bin/date.o bin/network.o bin/ram.o bin/temperature.o bin/weather.o
+	bin/battery.o bin/date.o bin/network.o bin/ram.o bin/temperature.o
 
 .DELETE_ON_ERROR:
 $(BIN_DIR)/$(BIN): $(OBJS)

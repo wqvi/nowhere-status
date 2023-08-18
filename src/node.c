@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int nowhere_map_create(struct node **_head, struct node_info *_infos, size_t _count) {
+int llist_create(struct node **_head, struct node_info *_infos, size_t _count) {
 	size_t size = _count * sizeof(struct node);
 	void *ptr;
 	if (!(ptr = malloc(size))) return -1;
@@ -26,7 +26,7 @@ int nowhere_map_create(struct node **_head, struct node_info *_infos, size_t _co
 	return 0;
 }
 
-void nowhere_map_put(struct node *_head, struct node *_node) {
+void llist_put(struct node *_head, struct node *_node) {
 	struct node *head = _head;
 	while (head != NULL) {
 		if (strcmp(head->name, _node->name) == 0) {
@@ -39,32 +39,44 @@ void nowhere_map_put(struct node *_head, struct node *_node) {
 	}
 }
 
-struct node *nowhere_map_get(struct node *_head, const char *_name) {
+struct node *llist_get(struct node *_head, const char *_name) {
 	struct node *head = _head;
 	while (head != NULL) {
 		if (strcmp(head->name, _name) == 0) {
 			return head;
 		}
+
 		head = head->next;
 	}
 	return NULL;
 }
 
-void nowhere_map_print(struct node *_head) {
+void llist_print(struct node *_head) {
 	printf(",[");
 	struct node *head = _head;
 	while (head != NULL) {
 		printf("{");
 		printf("\"name\":\"%s\",", head->name);
-		if (head->flags & NOWHERE_NODE_ALT) printf("\"full_text\":\"%s\"", head->alt_text); 
-		else printf("\"full_text\":\"%s\",", head->full_text);
-		if (head->flags & NOWHERE_NODE_COLOR) printf("\"color\":\"#%02x%02x%02x\",", head->color.r, head->color.g, head->color.b);
+
+		if (head->flags & NOWHERE_NODE_ALT) {
+			printf("\"full_text\":\"%s\"", head->alt_text); 
+		} else {
+			printf("\"full_text\":\"%s\",", head->full_text);
+		}
+
+		if (head->flags & NOWHERE_NODE_COLOR) {
+			printf("\"color\":\"#%02x%02x%02x\",", head->color.r, head->color.g, head->color.b);
+		}
+
 		printf("}");
 
-		if (head->next) printf(",");
+		if (head->next) {
+			printf(",");
+		}
 
 		head = head->next;
 	}
+
 	printf("]\n");
 	fflush(stdout);
 }

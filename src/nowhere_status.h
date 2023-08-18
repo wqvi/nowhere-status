@@ -15,6 +15,4 @@ int nowhere_ram(struct node *_node);
 
 int nowhere_temperature(struct node *_node);
 
-int nowhere_weather(struct node *_node, CURL *curl, char *_buffer);
-
 #endif // NOWHERE_STATUS_H

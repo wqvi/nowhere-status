@@ -7,12 +7,12 @@ struct node;
 
 struct node_info;
 
-int nowhere_map_create(struct node **_head, struct node_info *_infos, size_t _count);
+int llist_create(struct node **_head, struct node_info *_infos, size_t _count);
 
-void nowhere_map_put(struct node *_head, struct node *_node);
+void llist_put(struct node *_head, struct node *_node);
 
-struct node *nowhere_map_get(struct node *_head, const char *_name);
+struct node *llist_get(struct node *_head, const char *_name);
 
-void nowhere_map_print(struct node *_head);
+void llist_print(struct node *_head);
 
 #endif //NOWHERE_MAP_H

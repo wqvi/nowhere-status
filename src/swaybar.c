@@ -140,7 +140,7 @@ int swaybar_create(struct nowhere_swaybar **_swaybar) {
 	};
 
 	// battery, date, network, ram, temperature, weather
-	if (nowhere_map_create(&swaybar->head, infos, 5) == -1) {
+	if (llist_create(&swaybar->head, infos, 5) == -1) {
 		free(swaybar);
 		return 1;
 	}
@@ -192,13 +192,19 @@ static int swaybar_poll(struct nowhere_swaybar *_swaybar, struct epoll_event *_e
 			}
 
 			if (!find_node_name(buffer, name)) {
-				return 1;
+				continue;
 			}
 
-			struct node *node = nowhere_map_get(_swaybar->head, name);
-			if (node) {
-				if (node->alt_text[0] != '\0') node->flags ^= NOWHERE_NODE_ALT;
+			struct node *node = llist_get(_swaybar->head, name);
+			if (!node) {
+				continue;
 			}
+			
+			if (node->alt_text[0] == '\0') {
+				continue;
+			}
+			
+			node->flags ^= NOWHERE_NODE_ALT;
 		} else if (event->data.fd == _swaybar->timerfd) { // update standard nodes timer event
 			uint64_t exp;
 			if (read(_swaybar->timerfd, &exp, sizeof(uint64_t)) < 0) {
@@ -228,7 +234,7 @@ int swaybar_start(struct nowhere_swaybar *_swaybar) {
 			return 1;
 		}
 				
-		nowhere_map_print(_swaybar->head);
+		llist_print(_swaybar->head);
 	}
 
 	return 0;

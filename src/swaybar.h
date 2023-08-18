@@ -1,7 +1,6 @@
 #ifndef NOWHERE_SWAYBAR_H
 #define NOWHERE_SWAYBAR_H
 
-#include <curl/curl.h>
 #include "node.h"
 
 #ifndef NOWHERE_NAMSIZ

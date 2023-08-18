@@ -8,28 +8,13 @@ int main(int argc, char **argv) {
 	static const struct option opts[] = {
 		{"help", no_argument, 0, 'h'},
 		{"version", no_argument, 0, 'v'},
-		{"offline", no_argument, 0, 'o'},
-		{"location", required_argument, 0, 'l'},
 		{0, 0, 0, 0}
-	};
-
-	struct nowhere_config config = {
-		.offline = 0,
-		.location = "muc",
 	};
 
 	int c;
 	int index;
 	while (c = getopt_long(argc, argv, "ol:hv", opts, &index), c != -1) {
 		switch (c) {
-		case 'o':
-			// offline
-			config.offline = 1;
-			break;
-		case 'l':
-			// location
-			snprintf(config.location, 16, "%s", (char *)optarg);
-			break;
 		case 'h':
 			// help
 			printf("Usage: %s [options]\n", argv[0]);
@@ -48,7 +33,7 @@ int main(int argc, char **argv) {
 	}
 
 	struct nowhere_swaybar *swaybar;
-	if (swaybar_create(&swaybar, &config)) {
+	if (swaybar_create(&swaybar)) {
 		return EXIT_FAILURE;
 	}
 
