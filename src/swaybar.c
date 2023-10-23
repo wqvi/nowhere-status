@@ -111,7 +111,12 @@ int swaybar_create(struct nowhere_swaybar **_swaybar) {
 		return 1;
 	}
 
-	struct node_info infos[5] = {
+	struct node_info infos[6] = {
+		{
+			.flags = NOWHERE_NODE_DEFAULT,
+			.name = "player",
+			.fun = nowhere_player
+		},
 		{ 
 			.flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_ALT, 
 			.name = "wireless",
@@ -139,8 +144,8 @@ int swaybar_create(struct nowhere_swaybar **_swaybar) {
 		}
 	};
 
-	// battery, date, network, ram, temperature, weather
-	if (llist_create(&swaybar->head, infos, 5) == -1) {
+	// battery, date, network, ram, temperature
+	if (llist_create(&swaybar->head, infos, 6) == -1) {
 		free(swaybar);
 		return 1;
 	}

@@ -5,11 +5,12 @@ SRC_DIR := ./src
 MODULES_DIR := ./src/modules
 MODULES_BIN := ./$(BIN_DIR)/
 
-CFLAGS = -I$(SRC_DIR) -O2 -pedantic -Wall -Wextra -Wno-sign-compare -std=gnu99
-LIBS = -lcurl -lm
+CFLAGS = -I$(SRC_DIR) $(shell pkg-config --cflags playerctl) -O2 -pedantic -Wall -Wextra -Wno-sign-compare -std=gnu99
+LIBS = -lcurl -lm $(shell pkg-config --libs playerctl)
 
 OBJS := bin/main.o bin/node.o bin/io.o bin/swaybar.o \
-	bin/battery.o bin/date.o bin/network.o bin/ram.o bin/temperature.o
+	bin/battery.o bin/date.o bin/network.o bin/ram.o bin/temperature.o \
+	bin/player.o
 
 .DELETE_ON_ERROR:
 $(BIN_DIR)/$(BIN): $(OBJS)
