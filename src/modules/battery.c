@@ -35,14 +35,22 @@ int nowhere_battery(struct node *_node) {
 	if (nowhere_device_read(buffer, 4096, BAT0"status") == -1) return -1;
 
 	char status[4] = "UNK";
-	if (strncmp(buffer, DIS, sizeof(DIS)) == 0) {
+
+	// Assuming implementation of /sys/class/power_supply/BAT0/status
+	// prints "Discharging", "Charging", "Full", and "Not charging"
+	switch (buffer[0]) {
+	case 'D':
 		snprintf(status, 4, "DIS");
-	} else if (strncmp(buffer, CHR, sizeof(CHR)) == 0) {
+		break;
+	case 'C':
 		snprintf(status, 4, "CHR");
-	} else if (strncmp(buffer, FUL, sizeof(FUL)) == 0) {
+		break;
+	case 'F':
 		snprintf(status, 4, "FUL");
-	} else if (strncmp(buffer, NOT_CHR, sizeof(NOT_CHR)) == 0) {
+		break;
+	case 'N':
 		snprintf(status, 4, "INH");
+		break;
 	}
 
 	float normal = 1.0 - log(1.0 + ((float)capacity / 100.0f));
