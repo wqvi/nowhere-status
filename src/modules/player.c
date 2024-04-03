@@ -28,7 +28,7 @@ static int get_info(PlayerctlPlayer *_player, struct player_info *_info) {
 	gchar *title = playerctl_player_get_title(_player, NULL);
 	gchar *artist = playerctl_player_get_artist(_player, NULL);
 	
-	if (title == NULL || artist == NULL) {
+	if (title == NULL) {
 		return 1;
 	}
 
@@ -56,7 +56,10 @@ int nowhere_player(struct node *_node) {
 		return 0;
 	}
 
-	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%.16s by %.16s", info.title, info.artist);
+	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%.16s", info.title);
+	if (info.artist[0] != '\0') {
+		snprintf(_node->full_text, NOWHERE_TXTSIZ, "%.16s by %.16s", info.title, info.artist);
+	}
 
 	return 0;
 }
