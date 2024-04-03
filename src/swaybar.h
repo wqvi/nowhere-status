@@ -8,7 +8,7 @@
 #endif
 
 #ifndef NOWHERE_TXTSIZ
-#define NOWHERE_TXTSIZ 32
+#define NOWHERE_TXTSIZ 48
 #endif
 
 struct color {
