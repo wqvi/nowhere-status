@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include <math.h>
 #include "nowhere_status.h"
 #include <stdio.h>
@@ -26,13 +27,46 @@
 #define NOT_CHR "Not charging\n"
 #endif
 
-int nowhere_battery(struct node *_node) {
-	char buffer[4096];
+#define SYSBUFSIZ 4096
 
-	if (nowhere_device_read(buffer, 4096, BAT0"capacity") == -1) return -1;
+static int sysread(char *_buffer, const char *_file) {
+	int fd = open(_file, O_RDONLY);
+	if (fd == -1) {
+		return 1;
+	}
+
+	struct stat stat;
+	if (fstat(fd, &stat) == -1) {
+		goto error;
+	}
+
+	if (stat.st_size != SYSBUFSIZ) {
+		goto error;
+	}
+	
+	if (read(fd, _buffer, stat.st_size) == 0) {
+		goto error;
+	}
+
+	close(fd);
+	return 0;
+
+error:
+	close(fd);
+	return 1;
+}
+
+int nowhere_battery(struct node *_node) {
+	char buffer[SYSBUFSIZ];
+
+	if (sysread(buffer, BAT0"capacity")) {
+		return -1;
+	}
 	int capacity = (int)strtol(buffer, NULL, 0);
 	
-	if (nowhere_device_read(buffer, 4096, BAT0"status") == -1) return -1;
+	if (sysread(buffer, BAT0"status")) {
+		return -1;
+	}
 
 	char status[4] = "UNK";
 
@@ -64,6 +98,31 @@ int nowhere_battery(struct node *_node) {
 	_node->color.r = red;
 	_node->color.g = green;
 	_node->color.b = 0;
+
+	return 0;
+}
+
+int nowhere_temperature(struct node *_node) {
+	char buffer[4096];
+	
+	if (sysread(buffer, "/sys/class/thermal/thermal_zone0/temp")) {
+		return -1;
+	}
+
+	int temp = (int)(strtod(buffer, NULL) / 1000.0);
+
+	float normal = 1.0 - log(1.0 + (temp / 100.0f));
+
+	int red = (1.0f - normal) * 255.0f;
+	int green = normal * 255.0f;
+
+	snprintf(_node->name, NOWHERE_NAMSIZ, "temp");
+	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%d\U000000B0C", temp);
+	_node->alt_text[0] = '\0';
+	_node->color.r = red;
+	_node->color.g = green;
+	_node->color.b = 0;
+	_node->color._unused = 1;
 
 	return 0;
 }

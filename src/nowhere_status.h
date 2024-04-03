@@ -3,8 +3,6 @@
 
 #include "swaybar.h"
 
-int nowhere_device_read(char *_buffer, size_t _size, const char *_file);
-
 int nowhere_player(struct node *_node);
 
 int nowhere_battery(struct node *_node);

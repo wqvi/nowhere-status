@@ -8,8 +8,8 @@ MODULES_BIN := ./$(BIN_DIR)/
 CFLAGS = -I$(SRC_DIR) $(shell pkg-config --cflags playerctl) -O2 -pedantic -Wall -Wextra -Wno-sign-compare -std=gnu99
 LIBS = -lcurl -lm $(shell pkg-config --libs playerctl)
 
-OBJS := bin/main.o bin/node.o bin/io.o bin/swaybar.o \
-	bin/battery.o bin/date.o bin/network.o bin/ram.o bin/temperature.o \
+OBJS := bin/main.o bin/node.o bin/swaybar.o \
+	bin/date.o bin/network.o bin/ram.o bin/sysfs.o \
 	bin/player.o
 
 .DELETE_ON_ERROR:
