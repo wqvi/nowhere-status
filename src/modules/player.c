@@ -7,9 +7,7 @@ struct player_info {
 	char artist[16];
 };
 
-// TODO make sure the string doesn't have any whitespace
-// between the appended ellipsis
-static void tidy(char *_str) {
+static void tidy(char *_str, size_t _initial_length) {
 	for (int i = 15; i >= 0; i--) {
 		if (_str[i] == ' ' || _str[i] == '\0') {
 			_str[i] = '\0';
@@ -18,11 +16,25 @@ static void tidy(char *_str) {
 		}
 	}
 
-	size_t length = strlen(_str);
-	if (length >= 15) {
-		_str[15] = '.';
-		_str[14] = '.';
-		_str[13] = '.';
+	// appends an ellipsis to string
+	if (_str[15] == '\0' && _initial_length < 15) {
+		return;
+		
+	}
+
+	_str[15] = '.';
+	_str[14] = '.';
+	_str[13] = '.';
+	
+	for (int i = 12; i >= 0; i--) {
+		if ((_str[i] == '&' || _str[i] == ' ') && _str[i + 1] == '.') {
+			_str[i] = '.';
+			_str[i + 1] = '.';
+			_str[i + 2] = '.';
+			_str[i + 3] = '\0';
+		} else {
+			break;
+		}
 	}
 }
 
@@ -34,10 +46,14 @@ static int get_info(PlayerctlPlayer *_player, struct player_info *_info) {
 		return 1;
 	}
 
-	snprintf(_info->title, 16, "%s", title);
-	tidy(_info->title);
-	snprintf(_info->artist, 16, "%s", artist);
-	tidy(_info->artist);
+	// snprintf null terminates these strings
+	// that is undesirable for the tidy function
+	memcpy(_info->title, title, 16);
+	size_t len = strlen(title);
+	tidy(_info->title, len);
+	memcpy(_info->artist, artist, 16);
+	len = strlen(artist);
+	tidy(_info->artist, len);
 
 	return 0;
 }
