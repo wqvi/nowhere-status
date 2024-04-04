@@ -7,23 +7,23 @@
 #include <sys/timerfd.h>
 #include <unistd.h>
 
-static int get_timespec(struct itimerspec *_timerspec) {
+static int get_timespec(struct itimerspec *_timerspec, time_t _sec) {
 	struct timespec now;
 	if (clock_gettime(CLOCK_REALTIME, &now) == -1) {
 		return 1;
 	}
 
-	_timerspec->it_interval.tv_sec = 60;
+	_timerspec->it_interval.tv_sec = _sec;
 	_timerspec->it_value.tv_sec = now.tv_sec;
 
 	return 0;
 }
 
-static int create_timerfd(int *_timerfd) {
+static int create_timerfd(int *_timerfd, time_t _sec) {
 	struct itimerspec timerspec = { 0 };
 	int timerfd;
 
-	if (get_timespec(&timerspec)) {
+	if (get_timespec(&timerspec, _sec)) {
 		return 1;
 	}
 	
@@ -42,28 +42,15 @@ static int create_timerfd(int *_timerfd) {
 	return 0;
 }
 
-static int add_events(int _timerfd, int _epollfd) {
-	struct epoll_event stdin_event = {
-		.events = EPOLLIN,
-		.data = {
-			.fd = STDIN_FILENO
-		}
-	};
-	struct epoll_event timer_event = {
+static int add_events(int _epollfd, int _fd) {
+	struct epoll_event event = {
 		.events = EPOLLIN | EPOLLET,
 		.data = {
-			.fd = _timerfd
+			.fd = _fd
 		}
 	};
 
-	// I found if STDIN_FILENO is added first then STDIN will actually
-	// be polled. If STDIN is after the other FDs it'll not recieve input
-	// properly
-	if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, STDIN_FILENO, &stdin_event) < 0) {
-		return 1;
-	}
-
-	if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, _timerfd, &timer_event) < 0) {
+	if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, _fd, &event) < 0) {
 		return 1;
 	}
 
@@ -72,28 +59,51 @@ static int add_events(int _timerfd, int _epollfd) {
 
 static int swaybar_fd(struct nowhere_swaybar *_swaybar) {
 	int timerfd;
+	int playerctlfd;
 	int epollfd;
 
-	if (create_timerfd(&timerfd)) {
+	if (create_timerfd(&timerfd, 60)) {
+		return 1;
+	}
+
+	if (create_timerfd(&playerctlfd, 5)) {
+		close(timerfd);
 		return 1;
 	}
 	
 	epollfd = epoll_create1(EPOLL_CLOEXEC);
 	if (epollfd == -1) {
 		close(timerfd);
+		close(playerctlfd);
 		return 1;
 	}
 
-	if (add_events(timerfd, epollfd)) {
-		close(timerfd);
-		close(epollfd);
-		return 1;
+	// I found if STDIN_FILENO is added first then STDIN will actually
+	// be polled. If STDIN is after the other FDs it'll not recieve input
+	// properly
+	if (add_events(epollfd, STDIN_FILENO)) {
+		goto error;
+	}
+
+	if (add_events(epollfd, timerfd)) {
+		goto error;
+	}
+
+	if (add_events(epollfd, playerctlfd)) {
+		goto error;
 	}
 		
 	_swaybar->timerfd = timerfd;
+	_swaybar->playerctlfd = playerctlfd;
 	_swaybar->epollfd = epollfd;
 
 	return 0;
+
+error:
+	close(timerfd);
+	close(playerctlfd);
+	close(epollfd);
+	return 1;
 }
 
 int swaybar_create(struct nowhere_swaybar **_swaybar) {
@@ -114,32 +124,32 @@ int swaybar_create(struct nowhere_swaybar **_swaybar) {
 	struct node_info infos[6] = {
 		{
 			.flags = NOWHERE_NODE_DEFAULT,
-			.name = "player",
+			.name = 'p',
 			.fun = nowhere_player
 		},
 		{ 
 			.flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_ALT, 
-			.name = "wireless",
+			.name = 'w',
 			.fun = nowhere_network
 		},
 		{ 
 			.flags = NOWHERE_NODE_DEFAULT,
-			.name = "ram",
+			.name = 'r',
 			.fun = nowhere_ram
 		},
 		{
 			.flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR,
-			.name = "temp",
+			.name = 't',
 			.fun = nowhere_temperature
 		},
 		{ 
 			.flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_COLOR, 
-			.name = "bat",
+			.name = 'b',
 			.fun = nowhere_battery
 		},
 		{ 
 			.flags = NOWHERE_NODE_DEFAULT | NOWHERE_NODE_ALT, 
-			.name = "date",
+			.name = 'd',
 			.fun = nowhere_date
 		}
 	};
@@ -184,37 +194,62 @@ static int find_node_name(char *_buffer, char *_name) {
 	return 0;
 }
 
+static int stdin_poll(struct nowhere_swaybar *_swaybar) {
+	char buffer[BUFSIZ];
+	char name[16] = { 0 };
+	if (read(STDIN_FILENO, buffer, BUFSIZ) < 0) {
+		return 1;
+	}
+
+	if (!find_node_name(buffer, name)) {
+		return 0;
+	}
+
+	struct node *node = llist_get(_swaybar->head, name[0]);
+	if (!node) {
+		return 0;
+	}
+			
+	if (node->alt_text[0] == '\0') {
+		return 0;
+	}
+			
+	node->flags ^= NOWHERE_NODE_ALT;
+
+	return 0;
+}
+
+static int event_poll(int _fd) {
+	uint64_t exp;
+	return read(_fd, &exp, sizeof(uint64_t)) < 0;
+}
+
 static int swaybar_poll(struct nowhere_swaybar *_swaybar, struct epoll_event *_events) {
-	int avail = epoll_wait(_swaybar->epollfd, _events, 2, -1);
+	int avail = epoll_wait(_swaybar->epollfd, _events, 3, -1);
 	for (int i = 0; i < avail; i++) {
 		struct epoll_event *event = &_events[i];
 
 		if (event->data.fd == STDIN_FILENO) { // received click event
-			char buffer[BUFSIZ];
-			char name[16] = { 0 };
-			if (read(STDIN_FILENO, buffer, BUFSIZ) < 0) {
+			if (stdin_poll(_swaybar)) {
 				return 1;
 			}
-
-			if (!find_node_name(buffer, name)) {
-				continue;
-			}
-
-			struct node *node = llist_get(_swaybar->head, name);
-			if (!node) {
-				continue;
-			}
-			
-			if (node->alt_text[0] == '\0') {
-				continue;
-			}
-			
-			node->flags ^= NOWHERE_NODE_ALT;
 		} else if (event->data.fd == _swaybar->timerfd) { // update standard nodes timer event
-			uint64_t exp;
-			if (read(_swaybar->timerfd, &exp, sizeof(uint64_t)) < 0) {
+			if (event_poll(_swaybar->timerfd)) {
 				return 1;
 			}
+			struct node *head = _swaybar->head;
+			while (head != NULL) {
+				if (head->name != 'p') {
+					head->fun(head);
+				}
+				head = head->next;
+			}
+		} else if (event->data.fd == _swaybar->playerctlfd) { // update playerctl node timer event
+			if (event_poll(_swaybar->playerctlfd)) {
+				return 1;
+			}
+			struct node *head = llist_get(_swaybar->head, 'p');
+			head->fun(head);
 		}
 	}
 
@@ -226,15 +261,9 @@ int swaybar_start(struct nowhere_swaybar *_swaybar) {
 		return 1;
 	}
 
-	struct epoll_event events[3];
+	struct epoll_event events[4];
 	puts("{\"version\":1,\"click_events\":true}\n[[]");
 	for (;;) {
-		struct node *head = _swaybar->head;
-		while (head != NULL) {
-			head->fun(head);
-			head = head->next;
-		}
-		
 		if (swaybar_poll(_swaybar, events)) {
 			return 1;
 		}

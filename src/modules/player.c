@@ -7,6 +7,8 @@ struct player_info {
 	char artist[16];
 };
 
+// TODO make sure the string doesn't have any whitespace
+// between the appended ellipsis
 static void tidy(char *_str) {
 	for (int i = 15; i >= 0; i--) {
 		if (_str[i] == ' ' || _str[i] == '\0') {
@@ -41,7 +43,7 @@ static int get_info(PlayerctlPlayer *_player, struct player_info *_info) {
 }
 
 int nowhere_player(struct node *_node) {
-	snprintf(_node->name, NOWHERE_NAMSIZ, "player");
+	_node->name = 'p';
 	PlayerctlPlayer *player = playerctl_player_new(NULL, NULL);
 	if (player == NULL) {
 		// usually only present when first booted

@@ -92,7 +92,7 @@ int nowhere_battery(struct node *_node) {
 	int red = normal * 255.0f;
 	int green = (1.0f - normal) * 255.0f;
 
-	snprintf(_node->name, NOWHERE_NAMSIZ, "bat");
+	_node->name = 'b';
 	snprintf(_node->full_text, NOWHERE_TXTSIZ, "BAT0 %d%% %s", capacity, status);
 	_node->alt_text[0] = '\0';
 	_node->color.r = red;
@@ -116,7 +116,7 @@ int nowhere_temperature(struct node *_node) {
 	int red = (1.0f - normal) * 255.0f;
 	int green = normal * 255.0f;
 
-	snprintf(_node->name, NOWHERE_NAMSIZ, "temp");
+	_node->name = 't';
 	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%d\U000000B0C", temp);
 	_node->alt_text[0] = '\0';
 	_node->color.r = red;

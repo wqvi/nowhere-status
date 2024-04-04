@@ -18,7 +18,7 @@ int llist_create(struct node **_head, struct node_info *_infos, size_t _count) {
 		node->flags = info->flags & ~NOWHERE_NODE_ALT;
 		node->next = next;
 		node->fun = info->fun;
-		memcpy(node->name, info->name, NOWHERE_NAMSIZ);
+		node->name = info->name;
 	}
 
 	*_head = ptr;
@@ -29,7 +29,7 @@ int llist_create(struct node **_head, struct node_info *_infos, size_t _count) {
 void llist_put(struct node *_head, struct node *_node) {
 	struct node *head = _head;
 	while (head != NULL) {
-		if (strcmp(head->name, _node->name) == 0) {
+		if (head->name == _node->name) {
 			if (head->flags & NOWHERE_NODE_DEFAULT) memcpy(head->full_text, _node->full_text, NOWHERE_TXTSIZ);
 			if (head->flags & NOWHERE_NODE_COLOR) memcpy(&head->color, &_node->color, sizeof(struct color));
 			if (head->flags & NOWHERE_NODE_ALT) memcpy(head->alt_text, _node->alt_text, NOWHERE_TXTSIZ);
@@ -39,10 +39,10 @@ void llist_put(struct node *_head, struct node *_node) {
 	}
 }
 
-struct node *llist_get(struct node *_head, const char *_name) {
+struct node *llist_get(struct node *_head, char _name) {
 	struct node *head = _head;
 	while (head != NULL) {
-		if (strcmp(head->name, _name) == 0) {
+		if (head->name == _name) {
 			return head;
 		}
 
@@ -56,7 +56,7 @@ void llist_print(struct node *_head) {
 	struct node *head = _head;
 	while (head != NULL) {
 		printf("{");
-		printf("\"name\":\"%s\",", head->name);
+		printf("\"name\":\"%c\",", head->name);
 
 		if (head->flags & NOWHERE_NODE_ALT) {
 			printf("\"full_text\":\"%s\"", head->alt_text); 

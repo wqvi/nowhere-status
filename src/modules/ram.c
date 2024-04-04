@@ -37,7 +37,7 @@ int nowhere_ram(struct node *_node) {
 	// I hope your system is little endian
 	long double gb = 1 << 20;
 
-	snprintf(_node->name, NOWHERE_NAMSIZ, "ram");
+	_node->name = 'r';
 	long double memused = (memtotal - memfree - buffers - cached) / gb;
 	snprintf(_node->full_text, NOWHERE_TXTSIZ, "%.1LfGb/%.1LfGb", memused, memtotal / gb);
 	_node->alt_text[0] = '\0';

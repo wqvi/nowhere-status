@@ -7,7 +7,7 @@ int nowhere_date(struct node *_node) {
 	struct tm *tm = localtime(&now);
 	if (tm == NULL) return -1;
 
-	snprintf(_node->name, 16, "date");
+	_node->name = 'd';
 	// ISO Date format, 24 hours
 	// YYYY-MM-DD HH:MM
 	strftime(_node->full_text, NOWHERE_TXTSIZ, "%F %R", tm);

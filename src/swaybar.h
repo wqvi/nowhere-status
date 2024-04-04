@@ -30,7 +30,7 @@ typedef int (*update)(struct node *);
 
 struct node_info {
 	int flags;
-	char name[NOWHERE_NAMSIZ];
+	char name;
 	update fun;
 };
 
@@ -38,7 +38,7 @@ struct node {
 	int flags;
 	struct node *next;
 	update fun;
-	char name[NOWHERE_NAMSIZ];
+	char name;
 	char full_text[NOWHERE_TXTSIZ];
 	struct color color;
 	char alt_text[NOWHERE_TXTSIZ];
@@ -46,6 +46,7 @@ struct node {
 
 struct nowhere_swaybar {
 	int timerfd;
+	int playerctlfd;
 	int epollfd;
 	struct node *head;
 };
