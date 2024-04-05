@@ -21,7 +21,7 @@ static int resolve_ifname(struct iwreq *_rq) {
 		
 		// TODO add this to the wifi widget
 		// skip wireguard device
-		if (strcmp(list->ifa_name, "wg0") == 0) {
+		if (strncmp(list->ifa_name, "wg0", 2) == 0) {
 			continue;
 		}
 
