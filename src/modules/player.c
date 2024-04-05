@@ -49,10 +49,10 @@ static int get_info(PlayerctlPlayer *_player, struct player_info *_info) {
 	// snprintf null terminates these strings
 	// that is undesirable for the tidy function
 	memcpy(_info->title, title, 16);
-	size_t len = strlen(title);
+	size_t len = strlen(title) - 1;
 	tidy(_info->title, len);
 	memcpy(_info->artist, artist, 16);
-	len = strlen(artist);
+	len = strlen(artist) - 1;
 	tidy(_info->artist, len);
 
 	return 0;
