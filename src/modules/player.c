@@ -26,13 +26,15 @@ void sanitize(char *_str, size_t _initial_length) {
 static void sanitize(char *_str, size_t _initial_length) {
 #endif
 	for (int i = 15; i >= 0; i--) {
-		if (_str[i] == ' ' || _str[i] == '\0') {
+		if (_str[i] == ' ' || _str[i] == '\0' || _str[i] == '(') {
 			_str[i] = '\0';
 		} else {
 			break;
 		}
 	}
 
+	// Add escape sequence to double quotes
+	// this is unnecessary for single quotes
 	for (int i = 0; i < 15; i++) {
 		if (_str[i] == '\"') {
 			sstrr(_str + i, 15 - i);
@@ -42,9 +44,13 @@ static void sanitize(char *_str, size_t _initial_length) {
 	}
 
 	// appends an ellipsis to string
-	if (_str[15] == '\0' && _initial_length < 15) {
+	if (_initial_length < 15) {
 		return;
 		
+	}
+
+	if (_str[15 - 3] != ' ') {
+		return;
 	}
 
 	_str[15] = '.';
