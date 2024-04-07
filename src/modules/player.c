@@ -21,10 +21,16 @@ static void sstrr(char *_str, size_t _len) {
 }
 
 #ifdef DEBUG
-void sanitize(char *_str, size_t _initial_length) {
+int sanitize(char *_str, const char *_initial_str, size_t _initial_length) {
 #else
-static void sanitize(char *_str, size_t _initial_length) {
+static int sanitize(char *_str, const char *_initial_str, size_t _initial_length) {
 #endif
+	if (_initial_str[_initial_length - 1] == 'X') {
+		return 'X';
+	}
+
+	memcpy(_str, _initial_str, 16);
+
 	for (int i = 15; i >= 0; i--) {
 		if (_str[i] == ' ' || _str[i] == '\0' || _str[i] == '(') {
 			_str[i] = '\0';
@@ -45,12 +51,12 @@ static void sanitize(char *_str, size_t _initial_length) {
 
 	// appends an ellipsis to string
 	if (_initial_length < 15) {
-		return;
+		return 0;
 		
 	}
 
 	if (_str[15 - 3] != ' ') {
-		return;
+		return 0;
 	}
 
 	_str[15] = '.';
@@ -67,6 +73,8 @@ static void sanitize(char *_str, size_t _initial_length) {
 			break;
 		}
 	}
+	
+	return 0;
 }
 
 static int get_info(PlayerctlPlayer *_player, struct player_info *_info) {
@@ -79,14 +87,12 @@ static int get_info(PlayerctlPlayer *_player, struct player_info *_info) {
 
 	// snprintf null terminates these strings
 	// that is undesirable for the sanitize function
-	memcpy(_info->title, title, 16);
-	size_t len = strlen(title) - 1;
-	sanitize(_info->title, len);
-	memcpy(_info->artist, artist, 16);
-	len = strlen(artist) - 1;
-	sanitize(_info->artist, len);
+	size_t len = strlen(title);
+	int ret = sanitize(_info->title, title, len);
+	len = strlen(artist);
+	sanitize(_info->artist, artist, len);
 
-	return 0;
+	return ret;
 }
 
 int nowhere_player(struct node *_node) {
@@ -99,9 +105,14 @@ int nowhere_player(struct node *_node) {
 	}
 
 	struct player_info info;
-	if (get_info(player, &info)) {
+	int ret = get_info(player, &info);
+	switch (ret) {
+	case 1:
 		// when nothing is playing
 		snprintf(_node->full_text, NOWHERE_TXTSIZ, "Not playing");
+		return 0;
+	case 'X':
+		snprintf(_node->full_text, NOWHERE_TXTSIZ, "Website 'X' is playing media");
 		return 0;
 	}
 
