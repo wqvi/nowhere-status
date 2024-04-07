@@ -1,5 +1,7 @@
 #include <nowhere_status.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <check.h>
 
 void sstrr(char *_str, size_t _len);
@@ -24,6 +26,20 @@ START_TEST(test_playerctl_sstrr_function) {
 	sstrr(actual, strlen(actual) + 1);
 
 	ck_assert_str_eq(actual, "44\'18\" \'Till the End");
+
+	memset(actual, 0, sizeof(actual));
+	snprintf(actual, 4, "abc");
+
+	sstrr(actual, strlen(actual) + 1);
+
+	ck_assert_str_eq(actual, "aabc");
+
+	memset(actual, 0, sizeof(actual));
+	snprintf(actual, 8, "(())***");
+
+	sstrr(actual, strlen(actual) + 1);
+
+	ck_assert_str_eq(actual, "((())***");
 }
 END_TEST
 
