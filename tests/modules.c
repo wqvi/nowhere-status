@@ -6,15 +6,15 @@
 
 void sstrr(char *_str, size_t _len);
 
-void tidy(char *_str, size_t _initial_length);
+void sanitize(char *_str, size_t _initial_length);
 
-START_TEST(test_playerctl_tidy_function) {
+START_TEST(test_playerctl_sanitize_function) {
 	const char *phrase = "4\'18\" \'Till the End";
 
 	char actual[32];
 	memset(actual, 0, sizeof(actual));
 	memcpy(actual, phrase, 16);
-	tidy(actual, strlen(phrase));
+	sanitize(actual, strlen(phrase));
 
 	const char *expected = "4\'18\\\" \'Till...";
 	ck_assert_str_eq(actual, expected);
@@ -54,7 +54,7 @@ Suite *modules_suite(void) {
 
 	tc_core = tcase_create("Core");
 
-	tcase_add_test(tc_core, test_playerctl_tidy_function);
+	tcase_add_test(tc_core, test_playerctl_sanitize_function);
 	suite_add_tcase(s, tc_core);
 
 	tcase_add_test(tc_core, test_playerctl_sstrr_function);

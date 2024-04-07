@@ -21,9 +21,9 @@ static void sstrr(char *_str, size_t _len) {
 }
 
 #ifdef DEBUG
-void tidy(char *_str, size_t _initial_length) {
+void sanitize(char *_str, size_t _initial_length) {
 #else
-static void tidy(char *_str, size_t _initial_length) {
+static void sanitize(char *_str, size_t _initial_length) {
 #endif
 	for (int i = 15; i >= 0; i--) {
 		if (_str[i] == ' ' || _str[i] == '\0') {
@@ -72,13 +72,13 @@ static int get_info(PlayerctlPlayer *_player, struct player_info *_info) {
 	}
 
 	// snprintf null terminates these strings
-	// that is undesirable for the tidy function
+	// that is undesirable for the sanitize function
 	memcpy(_info->title, title, 16);
 	size_t len = strlen(title) - 1;
-	tidy(_info->title, len);
+	sanitize(_info->title, len);
 	memcpy(_info->artist, artist, 16);
 	len = strlen(artist) - 1;
-	tidy(_info->artist, len);
+	sanitize(_info->artist, len);
 
 	return 0;
 }
