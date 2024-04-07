@@ -9,17 +9,31 @@ void sstrr(char *_str, size_t _len);
 void sanitize(char *_str, size_t _initial_length);
 
 START_TEST(test_playerctl_sanitize_function) {
-	const char *phrase = "4\'18\" \'Till the End";
-
 	char actual[32];
 	memset(actual, 0, sizeof(actual));
-	memcpy(actual, phrase, 16);
-	sanitize(actual, strlen(phrase));
+	memcpy(actual, "4\'18\" \'Till the End", 16);
+	sanitize(actual, strlen("4\'18\" \'Till the End"));
 
-	const char *expected = "4\'18\\\" \'Till...";
-	ck_assert_str_eq(actual, expected);
+	ck_assert_str_eq(actual, "4\'18\\\" \'Till...");
 
-	ck_assert_int_eq(strlen(actual), strlen(expected));
+	ck_assert_int_eq(strlen(actual), strlen("4\'18\\\" \'Till..."));
+
+	memset(actual, 0, sizeof(actual));
+	memcpy(actual, "Reckless Ardor (Radio Edit)", 16);
+	sanitize(actual, strlen("Reckless Ardor (Radio Edit)"));
+
+	ck_assert_str_eq(actual, "Reckless Ardor");
+
+	ck_assert_int_eq(strlen(actual), strlen("Reckless Ardor"));
+
+	memset(actual, 0, sizeof(actual));
+	memcpy(actual, "Discopolis 2.0 (MEDUZA Remix)", 16);
+	sanitize(actual, strlen("Discopolis 2.0 (MEDUZA Remix)"));
+
+	ck_assert_str_eq(actual, "Discopolis 2.0");
+
+	ck_assert_int_eq(strlen(actual), strlen("Discopolis 2.0"));
+
 }
 END_TEST
 
