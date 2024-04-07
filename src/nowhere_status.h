@@ -15,8 +15,4 @@ int nowhere_ram(struct node *_node);
 
 int nowhere_temperature(struct node *_node);
 
-void sstrr(char *_str, size_t _len);
-
-void tidy(char *_str, size_t _initial_length);
-
 #endif // NOWHERE_STATUS_H

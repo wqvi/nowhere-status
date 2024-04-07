@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <check.h>
 
+void sstrr(char *_str, size_t _len);
+
+void tidy(char *_str, size_t _initial_length);
+
 START_TEST(test_playerctl_tidy_function) {
 	const char *phrase = "4\'18\" \'Till the End";
 

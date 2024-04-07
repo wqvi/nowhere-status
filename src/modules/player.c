@@ -7,7 +7,11 @@ struct player_info {
 	char artist[16];
 };
 
+#ifdef DEBUG
 void sstrr(char *_str, size_t _len) {
+#else
+static void sstrr(char *_str, size_t _len) {
+#endif
 	char b = _str[0];
 	for (int i = 0; i < _len - 1; i++) {
 		char c = _str[i + 1];
@@ -16,7 +20,11 @@ void sstrr(char *_str, size_t _len) {
 	}
 }
 
+#ifdef DEBUG
 void tidy(char *_str, size_t _initial_length) {
+#else
+static void tidy(char *_str, size_t _initial_length) {
+#endif
 	for (int i = 15; i >= 0; i--) {
 		if (_str[i] == ' ' || _str[i] == '\0') {
 			_str[i] = '\0';

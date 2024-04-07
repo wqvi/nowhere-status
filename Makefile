@@ -36,13 +36,12 @@ bin/%.o: src/modules/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-
 .DELETE_ON_ERROR:
 bin/tests/%.o: src/modules/%.c
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -DDEBUG -c $< -o $@
 
 .DELETE_ON_ERROR:
 bin/tests/%.o: tests/%.c
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -DDEBUG -c $< -o $@
