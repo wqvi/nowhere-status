@@ -7,6 +7,15 @@ struct player_info {
 	char artist[16];
 };
 
+void sstrr(char *_str, size_t _len) {
+	char b = _str[0];
+	for (int i = 0; i < _len - 1; i++) {
+		char c = _str[i + 1];
+		_str[i + 1] = b;
+		b = c;
+	}
+}
+
 void tidy(char *_str, size_t _initial_length) {
 	for (int i = 15; i >= 0; i--) {
 		if (_str[i] == ' ' || _str[i] == '\0') {

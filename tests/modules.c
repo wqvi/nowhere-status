@@ -14,6 +14,15 @@ START_TEST(test_playerctl_tidy_function) {
 }
 END_TEST
 
+START_TEST(test_playerctl_sstrr_function) {
+	char actual[32] = "4\'18\" \'Till the End";
+
+	sstrr(actual, strlen(actual) + 1);
+
+	ck_assert_str_eq(actual, "44\'18\" \'Till the End");
+}
+END_TEST
+
 Suite *modules_suite(void) {
 	Suite *s;
 	TCase *tc_core;
@@ -23,6 +32,9 @@ Suite *modules_suite(void) {
 	tc_core = tcase_create("Core");
 
 	tcase_add_test(tc_core, test_playerctl_tidy_function);
+	suite_add_tcase(s, tc_core);
+
+	tcase_add_test(tc_core, test_playerctl_sstrr_function);
 	suite_add_tcase(s, tc_core);
 
 	return s;
