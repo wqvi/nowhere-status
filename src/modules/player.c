@@ -33,6 +33,14 @@ static void tidy(char *_str, size_t _initial_length) {
 		}
 	}
 
+	for (int i = 0; i < 15; i++) {
+		if (_str[i] == '\"') {
+			sstrr(_str + i, 15 - i);
+			_str[i] = '\\';
+			i++;
+		}
+	}
+
 	// appends an ellipsis to string
 	if (_str[15] == '\0' && _initial_length < 15) {
 		return;

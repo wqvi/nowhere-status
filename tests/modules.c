@@ -12,11 +12,14 @@ START_TEST(test_playerctl_tidy_function) {
 	const char *phrase = "4\'18\" \'Till the End";
 
 	char actual[32];
+	memset(actual, 0, sizeof(actual));
 	memcpy(actual, phrase, 16);
 	tidy(actual, strlen(phrase));
 
-	const char *expected = "4\\\'18\\\"...";
+	const char *expected = "4\'18\\\" \'Till...";
 	ck_assert_str_eq(actual, expected);
+
+	ck_assert_int_eq(strlen(actual), strlen(expected));
 }
 END_TEST
 
