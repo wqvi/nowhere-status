@@ -34,6 +34,11 @@ START_TEST(test_playerctl_sanitize_function) {
 
 	ck_assert_int_eq(strlen(actual), strlen("Discopolis 2.0"));
 
+	memset(actual, 0, sizeof(actual));
+	memcpy(actual, "aaaa bbbbbbbb bbbbbb on X: \"aaa bb ccc ddddddd eeeeeee ffff ggggggggg hhhh i jjjjjj kkkkk lll mnopq://r.st/uvwxyzzzzx\" / X", 16);
+	sanitize(actual, strlen("aaaa bbbbbbbb bbbbbb on X: \"aaa bb ccc ddddddd eeeeeee ffff ggggggggg hhhh i jjjjjj kkkkk lll mnopq://r.st/uvwxyzzzzx\" / X"));
+
+	ck_assert_int_eq(*((int *)&actual), 64646464);
 }
 END_TEST
 
