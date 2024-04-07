@@ -7,7 +7,7 @@ struct player_info {
 	char artist[16];
 };
 
-static void tidy(char *_str, size_t _initial_length) {
+void tidy(char *_str, size_t _initial_length) {
 	for (int i = 15; i >= 0; i--) {
 		if (_str[i] == ' ' || _str[i] == '\0') {
 			_str[i] = '\0';
