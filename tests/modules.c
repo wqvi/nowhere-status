@@ -6,62 +6,95 @@
 
 void sstrr(char *_str, size_t _len);
 
-void sanitize(char *_str, size_t _initial_length);
+int sanitize(char *_str, const char *_initial_str, size_t _initial_length);
 
 START_TEST(test_playerctl_sanitize_function) {
+#define PHRASE "4\'18\" \'Till the End"
+#define EXPECTED "4\'18\\\" \'Till..."
+
 	char actual[32];
 	memset(actual, 0, sizeof(actual));
 	memcpy(actual, "4\'18\" \'Till the End", 16);
-	sanitize(actual, strlen("4\'18\" \'Till the End"));
+	sanitize(actual, PHRASE, strlen(PHRASE));
 
-	ck_assert_str_eq(actual, "4\'18\\\" \'Till...");
+	ck_assert_str_eq(actual, EXPECTED);
 
-	ck_assert_int_eq(strlen(actual), strlen("4\'18\\\" \'Till..."));
+	ck_assert_int_eq(strlen(actual), strlen(EXPECTED));
+
+#undef PHRASE
+#define PHRASE "Reckless Ardor (Radio Edit)"
+#undef EXPECTED
+#define EXPECTED "Reckless Ardor"
 
 	memset(actual, 0, sizeof(actual));
 	memcpy(actual, "Reckless Ardor (Radio Edit)", 16);
-	sanitize(actual, strlen("Reckless Ardor (Radio Edit)"));
+	sanitize(actual, PHRASE, strlen(PHRASE));
 
-	ck_assert_str_eq(actual, "Reckless Ardor");
+	ck_assert_str_eq(actual, EXPECTED);
 
-	ck_assert_int_eq(strlen(actual), strlen("Reckless Ardor"));
+	ck_assert_int_eq(strlen(actual), strlen(EXPECTED));
 
-	memset(actual, 0, sizeof(actual));
-	memcpy(actual, "Discopolis 2.0 (MEDUZA Remix)", 16);
-	sanitize(actual, strlen("Discopolis 2.0 (MEDUZA Remix)"));
-
-	ck_assert_str_eq(actual, "Discopolis 2.0");
-
-	ck_assert_int_eq(strlen(actual), strlen("Discopolis 2.0"));
+#undef PHRASE
+#define PHRASE "Discopolis 2.0 (MEDUZA Remix)"
+#undef EXPECTED
+#define EXPECTED "Discopolis 2.0"
 
 	memset(actual, 0, sizeof(actual));
-	memcpy(actual, "aaaa bbbbbbbb bbbbbb on X: \"aaa bb ccc ddddddd eeeeeee ffff ggggggggg hhhh i jjjjjj kkkkk lll mnopq://r.st/uvwxyzzzzx\" / X", 16);
-	sanitize(actual, strlen("aaaa bbbbbbbb bbbbbb on X: \"aaa bb ccc ddddddd eeeeeee ffff ggggggggg hhhh i jjjjjj kkkkk lll mnopq://r.st/uvwxyzzzzx\" / X"));
+	memcpy(actual, PHRASE, 16);
+	sanitize(actual, PHRASE, strlen(PHRASE));
 
-	ck_assert_int_eq(*((int *)&actual), 64646464);
+	ck_assert_str_eq(actual, EXPECTED);
+
+	ck_assert_int_eq(strlen(actual), strlen(EXPECTED));
+
+#undef PHRASE
+#define PHRASE "aaaa bbbbbbbb bbbbbb on X: \"aaa bb ccc ddddddd eeeeeee ffff ggggggggg hhhh i jjjjjj kkkkk lll mnopq://r.st/uvwxyzzzzx\" / X"
+#undef EXPECTED
+#define EXPECTED 'X'
+
+	memset(actual, 0, sizeof(actual));
+	memcpy(actual, PHRASE, 16);
+	(*(int *)&actual) = sanitize(actual, PHRASE, strlen(PHRASE));
+
+	ck_assert_int_eq((*(int *)&(actual)), EXPECTED);
 }
 END_TEST
 
 START_TEST(test_playerctl_sstrr_function) {
-	char actual[32] = "4\'18\" \'Till the End";
+#undef PHRASE
+#define PHRASE "4\'18\" \'Till the End"
+#undef EXPECTED
+#define EXPECTED "44\'18\" \'Till the End"
+
+	char actual[32] = PHRASE;
 
 	sstrr(actual, strlen(actual) + 1);
 
-	ck_assert_str_eq(actual, "44\'18\" \'Till the End");
+	ck_assert_str_eq(actual, EXPECTED);
+
+#undef PHRASE
+#define PHRASE "abc"
+#undef EXPECTED
+#define EXPECTED "aabc"
 
 	memset(actual, 0, sizeof(actual));
-	snprintf(actual, 4, "abc");
+	snprintf(actual, 4, PHRASE);
 
 	sstrr(actual, strlen(actual) + 1);
 
-	ck_assert_str_eq(actual, "aabc");
+	ck_assert_str_eq(actual, EXPECTED);
+
+#undef PHRASE
+#define PHRASE "(())***"
+#undef EXPECTED
+#define EXPECTED "((())***"
 
 	memset(actual, 0, sizeof(actual));
-	snprintf(actual, 8, "(())***");
+	snprintf(actual, 8, PHRASE);
 
 	sstrr(actual, strlen(actual) + 1);
 
-	ck_assert_str_eq(actual, "((())***");
+	ck_assert_str_eq(actual, EXPECTED);
 }
 END_TEST
 
