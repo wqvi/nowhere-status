@@ -21,17 +21,43 @@ static void sstrr(char *_str, size_t _len) {
 }
 
 #ifdef DEBUG
+void sstrl(char *_str, size_t _len) {
+#else
+static void sstrl(char *_str, size_t _len) {
+#endif
+	char b = _str[_len];
+	for (int i = _len; i > 0; i--) {
+		char c = _str[i - 1];
+		_str[i - 1] = b;
+		b = c;
+	}
+}
+
+#ifdef DEBUG
 int sanitize(char *_str, const char *_initial_str, size_t _initial_length) {
 #else
 static int sanitize(char *_str, const char *_initial_str, size_t _initial_length) {
 #endif
+	// title is from the website known as 'X'
 	if (_initial_str[_initial_length - 1] == 'X') {
 		return 'X';
 	}
 
-	memcpy(_str, _initial_str, 16);
+	// title is too long to display.
+	if (_initial_length > 64) {
+		return 'L';
+	}
 
-	for (int i = 15; i >= 0; i--) {
+	int len = 16;
+	memset(_str, 0, 16);
+	if (_initial_length < 16) {
+		len = strlen(_initial_str) + 1;
+		memcpy(_str, _initial_str, len);
+	} else {
+		memcpy(_str, _initial_str, 16);
+	}
+
+	for (int i = len; i >= 0; i--) {
 		if (_str[i] == ' ' || _str[i] == '\0' || _str[i] == '(') {
 			_str[i] = '\0';
 		} else {
@@ -41,39 +67,48 @@ static int sanitize(char *_str, const char *_initial_str, size_t _initial_length
 
 	// Add escape sequence to double quotes
 	// this is unnecessary for single quotes
-	for (int i = 0; i < 15; i++) {
+	for (int i = 0; i < len; i++) {
 		if (_str[i] == '\"') {
-			sstrr(_str + i, 15 - i);
+			sstrr(_str + i, len - i);
 			_str[i] = '\\';
 			i++;
 		}
 	}
 
+	int b = 0;
+	for (int i = 0; i < _initial_length; i++) {
+		if (_initial_str[i] == '(') {
+			b = 1;	
+		}
+	}
+
+	if (b) {
+		return 0;
+	}
+
 	// appends an ellipsis to string
-	if (_initial_length < 15) {
-		return 0;
-		
-	}
+	for (int i = len; i >= len / 2; i--) {
+		if (_str[i] == ' ' || _str[i] == '&' || _str[i] == '\0') {
+			continue;
+		}
 
-	if (_str[15 - 3] != ' ') {
-		return 0;
-	}
+		int j;
+		for (j = 0; j < 4; j++) {
+			if (_str[i - j] == ' ' || _str[i - j] == '&' || _str[i - j] == '\0') {
+				break;
+				j = 0;
+			}
+		}
 
-	_str[15] = '.';
-	_str[14] = '.';
-	_str[13] = '.';
-	
-	for (int i = 12; i >= 0; i--) {
-		if ((_str[i] == '&' || _str[i] == ' ') && _str[i + 1] == '.') {
+		if (j >= 4) {
 			_str[i] = '.';
-			_str[i + 1] = '.';
-			_str[i + 2] = '.';
-			_str[i + 3] = '\0';
-		} else {
+			_str[i - 1] = '.';
+			_str[i - 2] = '.';
+			memset(_str + i + 1, 0, len - i);
 			break;
 		}
 	}
-	
+
 	return 0;
 }
 
@@ -109,10 +144,13 @@ int nowhere_player(struct node *_node) {
 	switch (ret) {
 	case 1:
 		// when nothing is playing
-		snprintf(_node->full_text, NOWHERE_TXTSIZ, "Not playing");
+		snprintf(_node->full_text, NOWHERE_TXTSIZ, "No media playing");
 		return 0;
 	case 'X':
 		snprintf(_node->full_text, NOWHERE_TXTSIZ, "Website 'X' is playing media");
+		return 0;
+	case 'L':
+		snprintf(_node->full_text, NOWHERE_TXTSIZ, "Media playing");
 		return 0;
 	}
 
