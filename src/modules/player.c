@@ -76,13 +76,17 @@ static int sanitize(char *_str, const char *_initial_str, size_t _initial_length
 	}
 
 	int b = 0;
-	for (int i = 0; i < _initial_length; i++) {
+	for (int i = len - 1; i < _initial_length; i++) {
 		if (_initial_str[i] == '(') {
 			b = 1;	
 		}
 	}
 
 	if (b) {
+		return 0;
+	}
+
+	if (_initial_length == 15) {
 		return 0;
 	}
 
