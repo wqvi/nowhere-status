@@ -6,15 +6,17 @@
 
 void sstrr(char *_str, size_t _len);
 
+void sstrl(char *_str, size_t _len);
+
 int sanitize(char *_str, const char *_initial_str, size_t _initial_length);
 
 START_TEST(test_playerctl_sanitize_function) {
-#define PHRASE "4\'18\" \'Till the End"
-#define EXPECTED "4\'18\\\" \'Till..."
+#define PHRASE "9\'99\" \'TTTT TTT EEE"
+#define EXPECTED "9\'99\\\" \'T..."
 
 	char actual[32];
 	memset(actual, 0, sizeof(actual));
-	memcpy(actual, "4\'18\" \'Till the End", 16);
+	memcpy(actual, PHRASE, 16);
 	sanitize(actual, PHRASE, strlen(PHRASE));
 
 	ck_assert_str_eq(actual, EXPECTED);
@@ -22,12 +24,12 @@ START_TEST(test_playerctl_sanitize_function) {
 	ck_assert_int_eq(strlen(actual), strlen(EXPECTED));
 
 #undef PHRASE
-#define PHRASE "Reckless Ardor (Radio Edit)"
+#define PHRASE "RRRRRRRR AAAAA (RRRRR EEEE)"
 #undef EXPECTED
-#define EXPECTED "Reckless Ardor"
+#define EXPECTED "RRRRRRRR AAAAA"
 
 	memset(actual, 0, sizeof(actual));
-	memcpy(actual, "Reckless Ardor (Radio Edit)", 16);
+	memcpy(actual, PHRASE, 16);
 	sanitize(actual, PHRASE, strlen(PHRASE));
 
 	ck_assert_str_eq(actual, EXPECTED);
@@ -35,9 +37,22 @@ START_TEST(test_playerctl_sanitize_function) {
 	ck_assert_int_eq(strlen(actual), strlen(EXPECTED));
 
 #undef PHRASE
-#define PHRASE "Discopolis 2.0 (MEDUZA Remix)"
+#define PHRASE "DDDDDDDDDD 9.9 (MMMMMM RRRRR)"
 #undef EXPECTED
-#define EXPECTED "Discopolis 2.0"
+#define EXPECTED "DDDDDDDDDD 9.9"
+
+	memset(actual, 0, sizeof(actual));
+	memcpy(actual, PHRASE, 16);
+	sanitize(actual, PHRASE, strlen(PHRASE));
+
+	ck_assert_str_eq(actual, EXPECTED);
+
+	ck_assert_int_eq(strlen(actual), strlen(EXPECTED));
+
+#undef PHRASE
+#define PHRASE "AA AAAA A'A AAAAAAA AA"
+#undef EXPECTED
+#define EXPECTED "AA AAAA A'A A..."
 
 	memset(actual, 0, sizeof(actual));
 	memcpy(actual, PHRASE, 16);
@@ -62,9 +77,9 @@ END_TEST
 
 START_TEST(test_playerctl_sstrr_function) {
 #undef PHRASE
-#define PHRASE "4\'18\" \'Till the End"
+#define PHRASE "9\'99\" \'TTTT TTT EEE"
 #undef EXPECTED
-#define EXPECTED "44\'18\" \'Till the End"
+#define EXPECTED "99\'99\" \'TTTT TTT EEE"
 
 	char actual[32] = PHRASE;
 
@@ -98,6 +113,35 @@ START_TEST(test_playerctl_sstrr_function) {
 }
 END_TEST
 
+START_TEST(test_playerctl_sstrl_function) {
+#undef PHRASE
+#define PHRASE "abc_abbbc"
+#undef EXPECTED
+#define EXPECTED "abc_bbbc"
+
+	char actual[32] = PHRASE;
+
+	memset(actual, 0, sizeof(actual));
+	snprintf(actual, sizeof(PHRASE), PHRASE);
+
+	sstrl(actual + 4, strlen(actual) - 4);
+
+	ck_assert_str_eq(actual, EXPECTED);
+
+#undef PHRASE
+#define PHRASE "(())***"
+#undef EXPECTED
+#define EXPECTED "())***"
+
+	memset(actual, 0, sizeof(actual));
+	snprintf(actual, 8, PHRASE);
+
+	sstrl(actual, strlen(actual));
+
+	ck_assert_str_eq(actual, EXPECTED);
+}
+END_TEST
+
 Suite *modules_suite(void) {
 	Suite *s;
 	TCase *tc_core;
@@ -110,6 +154,9 @@ Suite *modules_suite(void) {
 	suite_add_tcase(s, tc_core);
 
 	tcase_add_test(tc_core, test_playerctl_sstrr_function);
+	suite_add_tcase(s, tc_core);
+
+	tcase_add_test(tc_core, test_playerctl_sstrl_function);
 	suite_add_tcase(s, tc_core);
 
 	return s;
