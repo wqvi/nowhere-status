@@ -24,6 +24,19 @@ START_TEST(test_playerctl_sanitize_function) {
 	ck_assert_int_eq(strlen(actual), strlen(EXPECTED));
 
 #undef PHRASE
+#define PHRASE "EEEEEEEEEEEEEEE"
+#undef EXPECTED
+#define EXPECTED "EEEEEEEEEEEEEEE"
+
+	memset(actual, 0, sizeof(actual));
+	memcpy(actual, PHRASE, 16);
+	sanitize(actual, PHRASE, strlen(PHRASE));
+
+	ck_assert_str_eq(actual, EXPECTED);
+
+	ck_assert_int_eq(strlen(actual), strlen(EXPECTED));
+
+#undef PHRASE
 #define PHRASE "RRRRRRRR AAAAA (RRRRR EEEE)"
 #undef EXPECTED
 #define EXPECTED "RRRRRRRR AAAAA"
