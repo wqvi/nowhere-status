@@ -10,6 +10,8 @@ void sstrl(char *_str, size_t _len);
 
 int sanitize(char *_str, const char *_initial_str, size_t _initial_length);
 
+void trim_whitespace(char *_str, size_t _len);
+
 START_TEST(test_playerctl_sanitize_function) {
 #define PHRASE "9\'99\" \'TTTT TTT EEE"
 #define EXPECTED "9\'99\\\" \'T..."
@@ -155,22 +157,46 @@ START_TEST(test_playerctl_sstrl_function) {
 }
 END_TEST
 
+START_TEST(test_trim_whitespace_function) {
+#undef PHRASE
+#define PHRASE "123456789012345 12345"
+#undef EXPECTED
+#define EXPECTED "123456789012345"
+
+	char actual[32] = PHRASE;
+
+	// this assumes other things have been done
+	// to the string. Usually resulting in a 16 long byte
+	// working region without null termination
+	trim_whitespace(actual, 15);
+
+	ck_assert_str_eq(actual, EXPECTED);
+}
+END_TEST
+
 Suite *modules_suite(void) {
 	Suite *s;
-	TCase *tc_core;
+	TCase *tc_san;
+	TCase *tc_str;
+	TCase *tc_trim;
 
 	s = suite_create("modules");
 
-	tc_core = tcase_create("Core");
+	tc_san = tcase_create("sanitize");
+	tc_str = tcase_create("strings");
+	tc_trim = tcase_create("trim");
 
-	tcase_add_test(tc_core, test_playerctl_sanitize_function);
-	suite_add_tcase(s, tc_core);
+	tcase_add_test(tc_san, test_playerctl_sanitize_function);
+	suite_add_tcase(s, tc_san);
 
-	tcase_add_test(tc_core, test_playerctl_sstrr_function);
-	suite_add_tcase(s, tc_core);
+	tcase_add_test(tc_str, test_playerctl_sstrr_function);
+	suite_add_tcase(s, tc_str);
 
-	tcase_add_test(tc_core, test_playerctl_sstrl_function);
-	suite_add_tcase(s, tc_core);
+	tcase_add_test(tc_str, test_playerctl_sstrl_function);
+	suite_add_tcase(s, tc_str);
+
+	tcase_add_test(tc_trim, test_trim_whitespace_function);
+	suite_add_tcase(s, tc_trim);
 
 	return s;
 }
