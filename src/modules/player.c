@@ -34,6 +34,34 @@ static void sstrl(char *_str, size_t _len) {
 }
 
 #ifdef DEBUG
+void trim_whitespace(char *_str, size_t _len) {
+#else
+static void trim_whitespace(char *_str, size_t _len) {
+#endif
+	for (int i = _len; i >= 0; i--) {
+		if (_str[i] == ' ' || _str[i] == '\0' || _str[i] == '(') {
+			_str[i] = '\0';
+		} else {
+			break;
+		}
+	}
+}
+
+#ifdef DEBUG
+void sanitize_double_quotes(char *_str, size_t _len) {
+#else
+static void sanitize_double_quotes(char *_str, size_t _len) {
+#endif
+	for (int i = 0; i < _len; i++) {
+		if (_str[i] == '\"') {
+			sstrr(_str + i, _len - i);
+			_str[i] = '\\';
+			i++;
+		}
+	}
+}
+
+#ifdef DEBUG
 int sanitize(char *_str, const char *_initial_str, size_t _initial_length) {
 #else
 static int sanitize(char *_str, const char *_initial_str, size_t _initial_length) {
@@ -57,23 +85,9 @@ static int sanitize(char *_str, const char *_initial_str, size_t _initial_length
 		memcpy(_str, _initial_str, 16);
 	}
 
-	for (int i = len; i >= 0; i--) {
-		if (_str[i] == ' ' || _str[i] == '\0' || _str[i] == '(') {
-			_str[i] = '\0';
-		} else {
-			break;
-		}
-	}
+	trim_whitespace(_str, len);
 
-	// Add escape sequence to double quotes
-	// this is unnecessary for single quotes
-	for (int i = 0; i < len; i++) {
-		if (_str[i] == '\"') {
-			sstrr(_str + i, len - i);
-			_str[i] = '\\';
-			i++;
-		}
-	}
+	sanitize_double_quotes(_str, len);
 
 	int b = 0;
 	for (int i = len - 1; i < _initial_length; i++) {
@@ -83,10 +97,6 @@ static int sanitize(char *_str, const char *_initial_str, size_t _initial_length
 	}
 
 	if (b) {
-		return 0;
-	}
-
-	if (_initial_length == 15) {
 		return 0;
 	}
 
