@@ -26,7 +26,7 @@ void trim_whitespace(char *_str, size_t _len) {
 static void trim_whitespace(char *_str, size_t _len) {
 #endif
 	for (int i = _len; i >= 0; i--) {
-		if (_str[i] == ' ' || _str[i] == '\0' || _str[i] == '(') {
+		if (_str[i] == ' ' || _str[i] == '\0' || _str[i] == '(' || _str[i - 1] == '(') {
 			_str[i] = '\0';
 		} else {
 			break;
@@ -54,6 +54,9 @@ int sanitize(char *_str, const char *_initial_str) {
 static int sanitize(char *_str, const char *_initial_str) {
 #endif
 	size_t initial_length = strlen(_initial_str);
+	char buffer[64];
+	memset(buffer, 0, sizeof(buffer));
+	memset(_str, 0, 16);
 
 	// title is from the website known as 'X'
 	if (_initial_str[initial_length - 1] == 'X') {
@@ -65,7 +68,6 @@ static int sanitize(char *_str, const char *_initial_str) {
 		//return 'L';
 	}
 
-	memset(_str, 0, 16);
 	if (initial_length < 15) {
 		memcpy(_str, _initial_str, initial_length);
 
@@ -76,33 +78,37 @@ static int sanitize(char *_str, const char *_initial_str) {
 		return 0;
 	}
 
-	memcpy(_str, _initial_str, 16);
+	memcpy(buffer, _initial_str, initial_length);
 
-	trim_whitespace(_str, 16);
+	trim_whitespace(buffer, 16);
 
-	sanitize_double_quotes(_str, initial_length);
+	sanitize_double_quotes(buffer, initial_length);
 
 	for (int i = initial_length; i >= 0; i--) {
-		if (_str[i] != ' ' || _str[i] == '\0') {
+		if (buffer[i] != ' ' || buffer[i] == '\0') {
 			continue;
 		}
 		i--;
 
 		int j;
-		for (j = 0; j < 5; j++) {
-			if (_str[i - j] == ' ') {
+		int k = 0;
+		for (j = 0; j < 6; j++) {
+			if (buffer[i - j] == ' ' && j > 4) {
+				k = 1;
 				break;
 			}
 		}
 
-		if (j > 3) {
-			_str[i + 1] = '\0';
-			_str[i] = '.';
-			_str[i - 1] = '.';
-			_str[i - 2] = '.';
+		if (k) {
+			buffer[i + 1] = '\0';
+			buffer[i] = '.';
+			buffer[i - 1] = '.';
+			buffer[i - 2] = '.';
 			break;
 		}
 	}
+
+	memcpy(_str, buffer, 16);
 
 	return 0;
 }
