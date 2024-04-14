@@ -21,19 +21,6 @@ static void sstrr(char *_str, size_t _len) {
 }
 
 #ifdef DEBUG
-void sstrl(char *_str, size_t _len) {
-#else
-static void sstrl(char *_str, size_t _len) {
-#endif
-	char b = _str[_len];
-	for (int i = _len; i > 0; i--) {
-		char c = _str[i - 1];
-		_str[i - 1] = b;
-		b = c;
-	}
-}
-
-#ifdef DEBUG
 void trim_whitespace(char *_str, size_t _len) {
 #else
 static void trim_whitespace(char *_str, size_t _len) {
@@ -62,63 +49,57 @@ static void sanitize_double_quotes(char *_str, size_t _len) {
 }
 
 #ifdef DEBUG
-int sanitize(char *_str, const char *_initial_str, size_t _initial_length) {
+int sanitize(char *_str, const char *_initial_str) {
 #else
-static int sanitize(char *_str, const char *_initial_str, size_t _initial_length) {
+static int sanitize(char *_str, const char *_initial_str) {
 #endif
+	size_t initial_length = strlen(_initial_str);
+
 	// title is from the website known as 'X'
-	if (_initial_str[_initial_length - 1] == 'X') {
+	if (_initial_str[initial_length - 1] == 'X') {
 		return 'X';
 	}
 
 	// title is too long to display.
-	if (_initial_length > 64) {
-		return 'L';
+	if (initial_length > 64) {
+		//return 'L';
 	}
 
-	int len = 16;
 	memset(_str, 0, 16);
-	if (_initial_length < 16) {
-		len = strlen(_initial_str) + 1;
-		memcpy(_str, _initial_str, len);
-	} else {
-		memcpy(_str, _initial_str, 16);
-	}
+	if (initial_length < 15) {
+		memcpy(_str, _initial_str, initial_length);
 
-	trim_whitespace(_str, len);
+		trim_whitespace(_str, initial_length);
 
-	sanitize_double_quotes(_str, len);
+		sanitize_double_quotes(_str, initial_length);
 
-	int b = 0;
-	for (int i = len - 1; i < _initial_length; i++) {
-		if (_initial_str[i] == '(') {
-			b = 1;	
-		}
-	}
-
-	if (b) {
 		return 0;
 	}
 
-	// appends an ellipsis to string
-	for (int i = len; i >= len / 2; i--) {
-		if (_str[i] == ' ' || _str[i] == '&' || _str[i] == '\0') {
+	memcpy(_str, _initial_str, 16);
+
+	trim_whitespace(_str, 16);
+
+	sanitize_double_quotes(_str, initial_length);
+
+	for (int i = initial_length; i >= 0; i--) {
+		if (_str[i] != ' ' || _str[i] == '\0') {
 			continue;
 		}
+		i--;
 
 		int j;
-		for (j = 0; j < 4; j++) {
-			if (_str[i - j] == ' ' || _str[i - j] == '&' || _str[i - j] == '\0') {
+		for (j = 0; j < 5; j++) {
+			if (_str[i - j] == ' ') {
 				break;
-				j = 0;
 			}
 		}
 
-		if (j >= 4) {
+		if (j > 3) {
+			_str[i + 1] = '\0';
 			_str[i] = '.';
 			_str[i - 1] = '.';
 			_str[i - 2] = '.';
-			memset(_str + i + 1, 0, len - i);
 			break;
 		}
 	}
@@ -134,12 +115,8 @@ static int get_info(PlayerctlPlayer *_player, struct player_info *_info) {
 		return 1;
 	}
 
-	// snprintf null terminates these strings
-	// that is undesirable for the sanitize function
-	size_t len = strlen(title);
-	int ret = sanitize(_info->title, title, len);
-	len = strlen(artist);
-	sanitize(_info->artist, artist, len);
+	int ret = sanitize(_info->title, title);
+	sanitize(_info->artist, artist);
 
 	return ret;
 }

@@ -8,7 +8,7 @@ void sstrr(char *_str, size_t _len);
 
 void sstrl(char *_str, size_t _len);
 
-int sanitize(char *_str, const char *_initial_str, size_t _initial_length);
+int sanitize(char *_str, const char *_initial_str);
 
 void trim_whitespace(char *_str, size_t _len);
 
@@ -18,18 +18,20 @@ START_TEST(test_playerctl_sanitize_function) {
 		"9\'99\" \'TTTT TTT EEE",
 		"EEEEEEEEEEEEEEE",
 		"RRRRRRRR AAAAA (RRRRR EEEE)",
-		"RRRRRRRR AAAA (RRRRR EEEE)",
+		//"RRRRRRRR AAAA (RRRRR EEEE)",
 		"DDDDDDDDDDDDDDD (MMMMMM RRRRR)",
 		"DDDDDDDDDDDDDDDD (MMMMMM RRRRR)",
+		"PPPPP TT TTT MMMMM",
 	};
 	const char *expects[] = {
 		"aaaaaaaaa",
 		"9\'99\\\" \'T...",
 		"EEEEEEEEEEEEEEE",
 		"RRRRRRRR AAAAA",
-		"RRRRRRRR AAAA",
+		//"RRRRRRRR AAAA",
 		"DDDDDDDDDDDDDDD",
 		"DDDDDDDDDDDDDDDD",
+		"PPPPP TT TTT...",
 	};
 
 	char actual[64];
@@ -41,7 +43,7 @@ START_TEST(test_playerctl_sanitize_function) {
 		memset(actual, 0, sizeof(actual));
 		memcpy(actual, phrase, strlen(phrase));
 		actual[16] = '\0';
-		sanitize(actual, phrase, strlen(phrase));
+		sanitize(actual, phrase);
 
 		ck_assert_str_eq(actual, expected);
 	}
