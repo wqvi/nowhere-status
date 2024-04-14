@@ -84,7 +84,7 @@ static int sanitize(char *_str, const char *_initial_str) {
 
 	sanitize_double_quotes(buffer, initial_length);
 
-	for (int i = initial_length; i >= 0; i--) {
+	/*for (int i = initial_length; i >= 0; i--) {
 		if (buffer[i] != ' ' || buffer[i] == '\0') {
 			continue;
 		}
@@ -106,7 +106,7 @@ static int sanitize(char *_str, const char *_initial_str) {
 			buffer[i - 2] = '.';
 			break;
 		}
-	}
+	}*/
 
 	memcpy(_str, buffer, 16);
 
