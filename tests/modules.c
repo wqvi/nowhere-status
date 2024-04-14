@@ -19,9 +19,9 @@ START_TEST(test_playerctl_sanitize_function) {
 		"EEEEEEEEEEEEEEE",
 		"RRRRRRRR AAAAA (RRRRR EEEE)",
 		//"RRRRRRRR AAAA (RRRRR EEEE)",
+		"01234 67 901 34567",
 		"DDDDDDDDDDDDDDD (MMMMMM RRRRR)",
 		"DDDDDDDDDDDDDDDD (MMMMMM RRRRR)",
-		"PPPPP TT TTT MMMMM",
 	};
 	const char *expects[] = {
 		"aaaaaaaaa",
@@ -29,9 +29,9 @@ START_TEST(test_playerctl_sanitize_function) {
 		"EEEEEEEEEEEEEEE",
 		"RRRRRRRR AAAAA",
 		//"RRRRRRRR AAAA",
+		"01234 67 901 3...",
 		"DDDDDDDDDDDDDDD",
 		"DDDDDDDDDDDDDDDD",
-		"PPPPP TT TTT...",
 	};
 
 	char actual[64];
@@ -42,7 +42,6 @@ START_TEST(test_playerctl_sanitize_function) {
 
 		memset(actual, 0, sizeof(actual));
 		memcpy(actual, phrase, strlen(phrase));
-		actual[16] = '\0';
 		sanitize(actual, phrase);
 
 		ck_assert_str_eq(actual, expected);
@@ -71,7 +70,7 @@ START_TEST(test_playerctl_sstrr_function) {
 		memset(actual, 0, sizeof(actual));
 		memcpy(actual, phrase, strlen(phrase));
 		actual[16] = '\0';
-		sstrr(actual, strlen(actual) + 1);
+		sstrr(actual, 16);
 
 		ck_assert_str_eq(actual, expected);
 	}
@@ -83,14 +82,27 @@ START_TEST(test_trim_whitespace_function) {
 #undef EXPECTED
 #define EXPECTED "123456789012345"
 
-	char actual[32] = PHRASE;
+	const char *phrases[] = {
+		"01234567 901234 (78901 3456)",
+		"0123456789012345 7890",
+	};
+	const char *expects[] = {
+		"01234567 901234",
+		"0123456789012345",
+	};
 
-	// this assumes other things have been done
-	// to the string. Usually resulting in a 16 long byte
-	// working region without null termination
-	trim_whitespace(actual, 15);
+	char actual[64];
 
-	ck_assert_str_eq(actual, EXPECTED);
+	for (int i = 0; i < sizeof(phrases) / sizeof(const char *); i++) {
+		const char *phrase = phrases[i];
+		const char *expected = expects[i];
+
+		memset(actual, 0, sizeof(actual));
+		memcpy(actual, phrase, strlen(phrase));
+		trim_whitespace(actual, 16);
+
+		ck_assert_str_eq(actual, expected);
+	}
 }
 END_TEST
 
