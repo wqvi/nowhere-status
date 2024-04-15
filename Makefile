@@ -1,5 +1,5 @@
 CFLAGS = -Isrc $(shell pkg-config --cflags playerctl) -O2 -pedantic -Wall -Wextra -Wno-sign-compare -std=gnu99
-LIBS = -lcurl -lm $(shell pkg-config --libs playerctl)
+LIBS = -lm $(shell pkg-config --libs playerctl)
 
 OBJS := bin/main.o bin/node.o bin/swaybar.o \
 	bin/date.o bin/network.o bin/ram.o bin/sysfs.o \
@@ -39,9 +39,9 @@ bin/%.o: src/modules/%.c
 .DELETE_ON_ERROR:
 bin/tests/%.o: src/modules/%.c
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -DDEBUG -c $< -o $@
+	$(CC) -Isrc -std=gnu99 -Wall $(shell pkg-config --cflags playerctl) -DDEBUG -c $< -o $@
 
 .DELETE_ON_ERROR:
 bin/tests/%.o: tests/%.c
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -DDEBUG -c $< -o $@
+	$(CC) -Isrc -std=gnu99 -Wall -DDEBUG -c $< -o $@
