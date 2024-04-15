@@ -22,6 +22,7 @@ START_TEST(test_playerctl_sanitize_function) {
 		"DDDDDDDDDDDDDDD (MMMMMM RRRRR)",
 		"DDDDDDDDDDDDDDDD (MMMMMM RRRRR)",
 		"DDDDDDDDDDDDDDD  (MMMMMM RRRRR)",
+		"AAAA: 12 AAAA AA AAAAA | AAAAAAAAA'A AAAAAAA AAA AAAAAAAAAA | AAA AAAAAA AAA"
 	};
 	const char *expects[] = {
 		"aaaaaaaaa",
@@ -31,6 +32,8 @@ START_TEST(test_playerctl_sanitize_function) {
 		"01234 67 901 34-",
 		"DDDDDDDDDDDDDDD",
 		"DDDDDDDDDDDDDDDD",
+		"DDDDDDDDDDDDDDD",
+		"L"
 	};
 
 	char actual[64];
@@ -40,17 +43,21 @@ START_TEST(test_playerctl_sanitize_function) {
 		const char *expected = expects[i];
 
 		memset(actual, 0, sizeof(actual));
-		memcpy(actual, phrase, strlen(phrase));
-		sanitize(actual, phrase);
-		memset(actual + 16, 0, sizeof(actual) - 16);
-
-		if (strlen(actual) < 16) {
+		int code = sanitize(actual, phrase);
+		if (code != 0) {
+			ck_assert_int_eq(code, expected[0]);
 			continue;
 		}
 
-		ck_assert_int_eq(strlen(actual), 16);
+		size_t expected_length = strlen(expected);
+		if (strlen(actual) > 16) {
+			expected_length = 16;
+			memset(actual + 16, 0, sizeof(actual) - 16);
+		}
 
 		ck_assert_str_eq(actual, expected);
+
+		ck_assert_int_eq(strlen(actual), expected_length);
 	}
 }
 END_TEST

@@ -66,7 +66,7 @@ static int sanitize(char *_str, const char *_initial_str) {
 
 	// title is too long to display.
 	if (initial_length > 64) {
-		//return 'L';
+		return 'L';
 	}
 
 	if (initial_length < 15) {
