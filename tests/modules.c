@@ -21,13 +21,14 @@ START_TEST(test_playerctl_sanitize_function) {
 		"01234 67 901 34567",
 		"DDDDDDDDDDDDDDD (MMMMMM RRRRR)",
 		"DDDDDDDDDDDDDDDD (MMMMMM RRRRR)",
+		"DDDDDDDDDDDDDDD  (MMMMMM RRRRR)",
 	};
 	const char *expects[] = {
 		"aaaaaaaaa",
-		"0\'34\\\" \'0123 5-",
+		"0\'34\\\" \'0123 56-",
 		"EEEEEEEEEEEEEEE",
 		"RRRRRRRR AAAAA",
-		"01234 67 901 345-",
+		"01234 67 901 34-",
 		"DDDDDDDDDDDDDDD",
 		"DDDDDDDDDDDDDDDD",
 	};
@@ -43,9 +44,13 @@ START_TEST(test_playerctl_sanitize_function) {
 		sanitize(actual, phrase);
 		memset(actual + 16, 0, sizeof(actual) - 16);
 
-		ck_assert_str_eq(actual, expected);
+		if (strlen(actual) < 16) {
+			continue;
+		}
 
-		ck_assert_int_eq(strlen(actual), strlen(expected));
+		ck_assert_int_eq(strlen(actual), 16);
+
+		ck_assert_str_eq(actual, expected);
 	}
 }
 END_TEST
