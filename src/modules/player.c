@@ -84,22 +84,12 @@ static int sanitize(char *_str, const char *_initial_str) {
 	trim_whitespace(buffer, 16);
 
 	sanitize_double_quotes(buffer, initial_length);
-	if (strlen(buffer) < 16) {
+	if (strlen(buffer) <= 16) {
+		memcpy(_str, buffer, 16);
 		return 0;
 	}
 
-	for (int i = 16; i >= 0; i--) {
-		if (!isspace(buffer[i])) {
-			continue;
-		}
-
-		if (isspace(buffer[i - 1])) {
-			continue;
-		}
-
-		buffer[i] = '-';
-		break;
-	}
+	buffer[15] = '-';
 
 	memcpy(_str, buffer, 16);
 
