@@ -1,6 +1,7 @@
 #include "nowhere_status.h"
 #include "playerctl/playerctl.h"
 #include <stdio.h>
+#include <ctype.h>
 
 struct player_info {
 	char title[16];
@@ -83,30 +84,22 @@ static int sanitize(char *_str, const char *_initial_str) {
 	trim_whitespace(buffer, 16);
 
 	sanitize_double_quotes(buffer, initial_length);
+	if (strlen(buffer) < 16) {
+		return 0;
+	}
 
-	/*for (int i = initial_length; i >= 0; i--) {
-		if (buffer[i] != ' ' || buffer[i] == '\0') {
+	for (int i = 16; i >= 0; i--) {
+		if (!isspace(buffer[i])) {
 			continue;
 		}
-		i--;
 
-		int j;
-		int k = 0;
-		for (j = 0; j < 6; j++) {
-			if (buffer[i - j] == ' ' && j > 4) {
-				k = 1;
-				break;
-			}
+		if (isspace(buffer[i - 1])) {
+			continue;
 		}
 
-		if (k) {
-			buffer[i + 1] = '\0';
-			buffer[i] = '.';
-			buffer[i - 1] = '.';
-			buffer[i - 2] = '.';
-			break;
-		}
-	}*/
+		buffer[i] = '-';
+		break;
+	}
 
 	memcpy(_str, buffer, 16);
 

@@ -15,21 +15,19 @@ void trim_whitespace(char *_str, size_t _len);
 START_TEST(test_playerctl_sanitize_function) {
 	const char *phrases[] = {
 		"aaaaaaaaa",
-		"9\'99\" \'TTTT TTT EEE",
+		"0\'34\" \'0123 567 901",
 		"EEEEEEEEEEEEEEE",
 		"RRRRRRRR AAAAA (RRRRR EEEE)",
-		//"RRRRRRRR AAAA (RRRRR EEEE)",
 		"01234 67 901 34567",
 		"DDDDDDDDDDDDDDD (MMMMMM RRRRR)",
 		"DDDDDDDDDDDDDDDD (MMMMMM RRRRR)",
 	};
 	const char *expects[] = {
 		"aaaaaaaaa",
-		"9\'99\\\" \'T...",
+		"0\'34\\\" \'0123 5-",
 		"EEEEEEEEEEEEEEE",
 		"RRRRRRRR AAAAA",
-		//"RRRRRRRR AAAA",
-		"01234 67 901 3...",
+		"01234 67 901 345-",
 		"DDDDDDDDDDDDDDD",
 		"DDDDDDDDDDDDDDDD",
 	};
@@ -43,8 +41,11 @@ START_TEST(test_playerctl_sanitize_function) {
 		memset(actual, 0, sizeof(actual));
 		memcpy(actual, phrase, strlen(phrase));
 		sanitize(actual, phrase);
+		memset(actual + 16, 0, sizeof(actual) - 16);
 
 		ck_assert_str_eq(actual, expected);
+
+		ck_assert_int_eq(strlen(actual), strlen(expected));
 	}
 }
 END_TEST
