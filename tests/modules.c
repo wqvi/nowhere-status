@@ -22,6 +22,7 @@ START_TEST(test_playerctl_sanitize_function) {
 		"DDDDDDDDDDDDDDD (MMMMMM RRRRR)",
 		"DDDDDDDDDDDDDDDD (MMMMMM RRRRR)",
 		"DDDDDDDDDDDDDDD  (MMMMMM RRRRR)",
+		"01234 67 9011 - 1234",
 		"AAAA: 12 AAAA AA AAAAA | AAAAAAAAA'A AAAAAAA AAA AAAAAAAAAA | AAA AAAAAA AAA"
 	};
 	const char *expects[] = {
@@ -33,6 +34,7 @@ START_TEST(test_playerctl_sanitize_function) {
 		"DDDDDDDDDDDDDDD",
 		"DDDDDDDDDDDDDDDD",
 		"DDDDDDDDDDDDDDD",
+		"01234 67 9011-",
 		"L"
 	};
 
