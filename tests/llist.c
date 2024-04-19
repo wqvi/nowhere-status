@@ -83,7 +83,7 @@ Suite *linked_list_suite(void) {
 	tcase_add_loop_test(tc_create, test_linked_list_create_function, 0, 2);
 	suite_add_tcase(s, tc_create);
 
-	tcase_add_loop_test(tc_free, test_linked_list_get_function);
+	tcase_add_loop_test(tc_free, test_linked_list_get_function, 0, 2);
 	suite_add_tcase(s, tc_free);
 
 	return s;

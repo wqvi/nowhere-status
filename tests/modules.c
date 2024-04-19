@@ -15,7 +15,7 @@ int sanitize(char *_str, const char *_initial_str);
 void trim_whitespace(char *_str, size_t _len);
 
 START_TEST(test_playerctl_sanitize_function) {
-	const char *phrases[] = {
+	static const char *phrases[] = {
 		"aaaaaaaaa",
 		"0\'34\" \'0123 567 901",
 		"EEEEEEEEEEEEEEE",
@@ -30,7 +30,7 @@ START_TEST(test_playerctl_sanitize_function) {
 		"OOO-AAA-AAAA || CCCCCCCCCC 546",
 		"AAAA: 12 AAAA AA AAAAA | AAAAAAAAA'A AAAAAAA AAA AAAAAAAAAA | AAA AAAAAA AAA",
 	};
-	const char *expects[] = {
+	static const char *expects[] = {
 		"aaaaaaaaa",
 		"0\'34\\\" \'0123 56-",
 		"EEEEEEEEEEEEEEE",
@@ -48,17 +48,14 @@ START_TEST(test_playerctl_sanitize_function) {
 
 	char actual[64];
 
-	for (int i = 0; i < sizeof(phrases) / sizeof(const char *); i++) {
-		const char *phrase = phrases[i];
-		const char *expected = expects[i];
+	const char *phrase = phrases[_i];
+	const char *expected = expects[_i];
 
-		memset(actual, 0, sizeof(actual));
-		int code = sanitize(actual, phrase);
-		if (code != 0) {
-			ck_assert_int_eq(code, expected[0]);
-			continue;
-		}
-
+	memset(actual, 0, sizeof(actual));
+	int code = sanitize(actual, phrase);
+	if (code != 0) {
+		ck_assert_int_eq(code, expected[0]);
+	} else {
 		size_t expected_length = strlen(expected);
 		if (strlen(actual) > 16) {
 			expected_length = 16;
@@ -73,12 +70,12 @@ START_TEST(test_playerctl_sanitize_function) {
 END_TEST
 
 START_TEST(test_playerctl_sstrr_function) {
-	const char *phrases[] = {
+	static const char *phrases[] = {
 		"9\'99\\\" \'T",
 		"abc",
 		"(())***",
 	};
-	const char *expects[] = {
+	static const char *expects[] = {
 		"99\'99\\\" \'T",
 		"aabc",
 		"((())***",
@@ -86,46 +83,38 @@ START_TEST(test_playerctl_sstrr_function) {
 
 	char actual[64];
 
-	for (int i = 0; i < sizeof(phrases) / sizeof(const char *); i++) {
-		const char *phrase = phrases[i];
-		const char *expected = expects[i];
+	const char *phrase = phrases[_i];
+	const char *expected = expects[_i];
 
-		memset(actual, 0, sizeof(actual));
-		memcpy(actual, phrase, strlen(phrase));
-		actual[16] = '\0';
-		sstrr(actual, 16);
+	memset(actual, 0, sizeof(actual));
+	memcpy(actual, phrase, strlen(phrase));
+	actual[16] = '\0';
+	sstrr(actual, 16);
 
-		ck_assert_str_eq(actual, expected);
-	}
+	ck_assert_str_eq(actual, expected);
 }
 END_TEST
 
 START_TEST(test_trim_whitespace_function) {
-#define PHRASE "123456789012345 12345"
-#undef EXPECTED
-#define EXPECTED "123456789012345"
-
-	const char *phrases[] = {
+	static const char *phrases[] = {
 		"01234567 901234 (78901 3456)",
 		"0123456789012345 7890",
 	};
-	const char *expects[] = {
+	static const char *expects[] = {
 		"01234567 901234",
 		"0123456789012345",
 	};
 
 	char actual[64];
 
-	for (int i = 0; i < sizeof(phrases) / sizeof(const char *); i++) {
-		const char *phrase = phrases[i];
-		const char *expected = expects[i];
+	const char *phrase = phrases[_i];
+	const char *expected = expects[_i];
 
-		memset(actual, 0, sizeof(actual));
-		memcpy(actual, phrase, strlen(phrase));
-		trim_whitespace(actual, 16);
+	memset(actual, 0, sizeof(actual));
+	memcpy(actual, phrase, strlen(phrase));
+	trim_whitespace(actual, 16);
 
-		ck_assert_str_eq(actual, expected);
-	}
+	ck_assert_str_eq(actual, expected);
 }
 END_TEST
 
@@ -141,13 +130,13 @@ Suite *modules_suite(void) {
 	tc_str = tcase_create("shift string right");
 	tc_trim = tcase_create("trim");
 
-	tcase_add_test(tc_san, test_playerctl_sanitize_function);
+	tcase_add_loop_test(tc_san, test_playerctl_sanitize_function, 0, 13);
 	suite_add_tcase(s, tc_san);
 
-	tcase_add_test(tc_str, test_playerctl_sstrr_function);
+	tcase_add_loop_test(tc_str, test_playerctl_sstrr_function, 0, 3);
 	suite_add_tcase(s, tc_str);
 
-	tcase_add_test(tc_trim, test_trim_whitespace_function);
+	tcase_add_loop_test(tc_trim, test_trim_whitespace_function, 0, 2);
 	suite_add_tcase(s, tc_trim);
 
 	return s;
