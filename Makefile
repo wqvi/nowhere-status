@@ -5,7 +5,8 @@ OBJS := bin/main.o bin/node.o bin/swaybar.o \
 	bin/date.o bin/network.o bin/ram.o bin/sysfs.o \
 	bin/player.o
 
-TESTS_OBJS := bin/tests/modules.o bin/tests/player.o bin/tests/node.o
+TESTS_OBJS := bin/tests/modules.o bin/tests/llist.o \
+	bin/tests/player.o bin/tests/node.o
 
 all: bin/nowhere-status bin/tests/check
 
