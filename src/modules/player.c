@@ -92,7 +92,7 @@ static int sanitize(char *_str, const char *_initial_str) {
 	buffer[15] = '-';
 
 	for (int i = 15; i >= 0; i--) {
-		if (buffer[i - 1] == '-' || isspace(buffer[i - 1])) {
+		if (buffer[i - 1] == '-' || buffer[i - 1] == '|' || isspace(buffer[i - 1])) {
 			buffer[i - 1] = '-';
 			buffer[i] = '\0';
 			continue;
