@@ -5,7 +5,7 @@ OBJS := bin/main.o bin/node.o bin/swaybar.o \
 	bin/date.o bin/network.o bin/ram.o bin/sysfs.o \
 	bin/player.o
 
-TESTS_OBJS := bin/tests/modules.o bin/tests/player.o
+TESTS_OBJS := bin/tests/modules.o bin/tests/player.o bin/tests/node.o
 
 all: bin/nowhere-status bin/tests/check
 
@@ -35,6 +35,11 @@ bin/%.o: src/%.c
 bin/%.o: src/modules/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
+
+.DELETE_ON_ERROR:
+bin/tests/%.o: src/%.c
+	mkdir -p $(dir $@)
+	$(CC) -Isrc -std=gnu99 -Wall -DDEBUG -c $< -o $@
 
 .DELETE_ON_ERROR:
 bin/tests/%.o: src/modules/%.c
