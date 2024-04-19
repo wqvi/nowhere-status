@@ -84,15 +84,23 @@ static int sanitize(char *_str, const char *_initial_str) {
 	trim_whitespace(buffer, 16);
 
 	sanitize_double_quotes(buffer, initial_length);
-	if (strlen(buffer) <= 16) {
-		memcpy(_str, buffer, 16);
+	if (strlen(_initial_str) <= 16) {
+		memcpy(_str, buffer, strlen(buffer));
 		return 0;
 	}
 
 	buffer[15] = '-';
 
-	memcpy(_str, buffer, 16);
+	for (int i = 15; i >= 0; i--) {
+		if (buffer[i - 1] == '-' || isspace(buffer[i - 1])) {
+			buffer[i - 1] = '-';
+			buffer[i] = '\0';
+			continue;
+		}
+		break;
+	}
 
+	memcpy(_str, buffer, 16);
 	return 0;
 }
 
