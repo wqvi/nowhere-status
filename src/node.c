@@ -26,19 +26,6 @@ int llist_create(struct node **_head, struct node_info *_infos, size_t _count) {
 	return 0;
 }
 
-void llist_put(struct node *_head, struct node *_node) {
-	struct node *head = _head;
-	while (head != NULL) {
-		if (head->name == _node->name) {
-			if (head->flags & NOWHERE_NODE_DEFAULT) memcpy(head->full_text, _node->full_text, NOWHERE_TXTSIZ);
-			if (head->flags & NOWHERE_NODE_COLOR) memcpy(&head->color, &_node->color, sizeof(struct color));
-			if (head->flags & NOWHERE_NODE_ALT) memcpy(head->alt_text, _node->alt_text, NOWHERE_TXTSIZ);
-			break;
-		}
-		head = head->next;
-	}
-}
-
 struct node *llist_get(struct node *_head, char _name) {
 	struct node *head = _head;
 	while (head != NULL) {
