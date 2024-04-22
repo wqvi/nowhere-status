@@ -5,8 +5,8 @@ OBJS := bin/main.o bin/node.o bin/swaybar.o \
 	bin/date.o bin/network.o bin/ram.o bin/sysfs.o \
 	bin/player.o
 
-TESTS_OBJS := bin/tests/modules.o bin/tests/llist.o \
-	bin/tests/player.o bin/tests/node.o
+TESTS_OBJS := bin/tests/main.o bin/tests/player.o bin/tests/llist.o \
+	      bin/debug/node.o bin/debug/player.o
 
 all: bin/nowhere-status bin/tests/check
 
@@ -38,14 +38,14 @@ bin/%.o: src/modules/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .DELETE_ON_ERROR:
-bin/tests/%.o: src/%.c
+bin/debug/%.o: src/%.c
 	mkdir -p $(dir $@)
 	$(CC) -Isrc -std=gnu99 -Wall -DDEBUG -c $< -o $@
 
 .DELETE_ON_ERROR:
-bin/tests/%.o: src/modules/%.c
+bin/debug/%.o: src/modules/%.c
 	mkdir -p $(dir $@)
-	$(CC) -Isrc -std=gnu99 -Wall $(shell pkg-config --cflags playerctl) -DDEBUG -c $< -o $@
+	$(CC) -Isrc -std=gnu99 -Wall -DDEBUG $(shell pkg-config --cflags playerctl) -c $< -o $@
 
 .DELETE_ON_ERROR:
 bin/tests/%.o: tests/%.c
