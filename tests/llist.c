@@ -2,89 +2,74 @@
 #include <swaybar.h>
 #include <stdlib.h>
 
-static struct node *heads[2] = {
-	NULL
-};
+static struct node *head;
 
-START_TEST(test_linked_list_create_function) {
-	static struct node_info infos[2][4] = {
+void setup(void) {
+	static struct node_info infos[4] = {
 		{
-			{
-				NOWHERE_NODE_DEFAULT,
-				'A',
-				NULL
-			},
-			{
-				NOWHERE_NODE_DEFAULT,
-				'B',
-				NULL
-			}
+			NOWHERE_NODE_DEFAULT,
+			'A',
+			NULL
 		},
 		{
-			{
-				NOWHERE_NODE_DEFAULT,
-				'C',
-				NULL,
-			},
-			{
-				NOWHERE_NODE_DEFAULT,
-				'D',
-				NULL
-			}
+			NOWHERE_NODE_DEFAULT,
+			'B',
+			NULL
+		},
+		{
+			NOWHERE_NODE_DEFAULT,
+			'C',
+			NULL,
+		},
+		{
+			NOWHERE_NODE_DEFAULT,
+			'D',
+			NULL
 		}
 	};
-	static int expects[] = {
-		0,
-		0
-	};
 
-	struct node *head = heads[_i];
-	struct node_info *info = infos[_i];
-	int expected = expects[_i];
-
-	int ret = llist_create(&head, info, 2);
-
-	ck_assert_int_eq(ret, expected);
-
-	ck_assert_ptr_nonnull(head);
+	llist_create(&head, infos, 4);
 }
-END_TEST
 
-START_TEST(test_linked_list_get_function) {
+void teardown(void) {
+	free(head);
+}
+
+START_TEST(test_llist_get) {
 	static char names[] = {
 		'A',
-		'B',
+		'D',
 		'C',
-		'D'
+		'B'
 	};
 
-       struct node *head = heads[_i];
-       char name = names[_i];
+	struct node *expects[] = {
+		head + 0,
+		head + 3,
+		head + 2,
+		head + 1
+	};
 
-       struct node *node = llist_get(head, name);
+	struct node *node = llist_get(head, names[_i]);
 
-       //ck_assert_ptr_nonnull(node);
+	ck_assert_ptr_nonnull(node);
 
-       free(head);
+	ck_assert_ptr_eq(node, expects[_i]);
 
 }
 END_TEST
 
 Suite *linked_list_suite(void) {
 	Suite *s;
-	TCase *tc_create;
-	TCase *tc_free;
+	TCase *tc_core;
 
 	s = suite_create("linked_list");
 
-	tc_create = tcase_create("linked list create");
-	tc_free = tcase_create("linked list get");
+	tc_core = tcase_create("core");
 
-	tcase_add_loop_test(tc_create, test_linked_list_create_function, 0, 2);
-	suite_add_tcase(s, tc_create);
-
-	tcase_add_loop_test(tc_free, test_linked_list_get_function, 0, 2);
-	suite_add_tcase(s, tc_free);
+	tcase_add_checked_fixture(tc_core, setup, teardown);
+	tcase_add_loop_test(tc_core, test_llist_get, 0, 4);
+	suite_add_tcase(s, tc_core);
 
 	return s;
 }
