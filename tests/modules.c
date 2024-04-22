@@ -14,7 +14,7 @@ int sanitize(char *_str, const char *_initial_str);
 
 void trim_whitespace(char *_str, size_t _len);
 
-START_TEST(test_playerctl_sanitize_function) {
+START_TEST(test_sanitize) {
 	static const char *phrases[] = {
 		"aaaaaaaaa",
 		"0\'34\" \'0123 567 901",
@@ -69,7 +69,7 @@ START_TEST(test_playerctl_sanitize_function) {
 }
 END_TEST
 
-START_TEST(test_playerctl_sstrr_function) {
+START_TEST(test_sstrr) {
 	static const char *phrases[] = {
 		"9\'99\\\" \'T",
 		"abc",
@@ -95,7 +95,7 @@ START_TEST(test_playerctl_sstrr_function) {
 }
 END_TEST
 
-START_TEST(test_trim_whitespace_function) {
+START_TEST(test_trim_whitespace) {
 	static const char *phrases[] = {
 		"01234567 901234 (78901 3456)",
 		"0123456789012345 7890",
@@ -130,13 +130,13 @@ Suite *modules_suite(void) {
 	tc_str = tcase_create("shift string right");
 	tc_trim = tcase_create("trim");
 
-	tcase_add_loop_test(tc_san, test_playerctl_sanitize_function, 0, 13);
+	tcase_add_loop_test(tc_san, test_sanitize, 0, 13);
 	suite_add_tcase(s, tc_san);
 
-	tcase_add_loop_test(tc_str, test_playerctl_sstrr_function, 0, 3);
+	tcase_add_loop_test(tc_str, test_sstrr, 0, 3);
 	suite_add_tcase(s, tc_str);
 
-	tcase_add_loop_test(tc_trim, test_trim_whitespace_function, 0, 2);
+	tcase_add_loop_test(tc_trim, test_trim_whitespace, 0, 2);
 	suite_add_tcase(s, tc_trim);
 
 	return s;
