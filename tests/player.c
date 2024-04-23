@@ -25,6 +25,7 @@ START_TEST(test_sanitize) {
 		"AAAAAAAAAA AAAAA AAAAAAAAAAA , AAAAAAA AAAAA AAAAAAAAAAA",
 		"OOO-AAA-AAAA || CCCCCCCCCC 546",
 		"AAAA: 12 AAAA AA AAAAA | AAAAAAAAA'A AAAAAAA AAA AAAAAAAAAA | AAA AAAAAA AAA",
+		"UUUUUUUUU 小马在纽约",
 	};
 	static const char *expects[] = {
 		"aaaaaaaaa",
@@ -40,6 +41,7 @@ START_TEST(test_sanitize) {
 		"AAAAAAAAAA AAAA-",
 		"OOO-AAA-AAAA-",
 		"L",
+		"UUUUUUUUU",
 	};
 
 	char actual[64];
@@ -126,7 +128,7 @@ Suite *modules_suite(void) {
 	tc_str = tcase_create("shift string right");
 	tc_trim = tcase_create("trim");
 
-	tcase_add_loop_test(tc_san, test_sanitize, 0, 13);
+	tcase_add_loop_test(tc_san, test_sanitize, 0, 14);
 	suite_add_tcase(s, tc_san);
 
 	tcase_add_loop_test(tc_str, test_sstrr, 0, 3);
