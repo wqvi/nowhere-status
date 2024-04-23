@@ -72,6 +72,12 @@ static int sanitize(char *_str, const char *_initial_str) {
 	if (initial_length < 15) {
 		memcpy(_str, _initial_str, initial_length);
 
+		for (int i = 0; i < initial_length; i++) {
+			if (!isprint(_str[i])) {
+				_str[i] = ' ';
+			}
+		}
+
 		trim_whitespace(_str, initial_length);
 
 		sanitize_double_quotes(_str, initial_length);
@@ -80,6 +86,12 @@ static int sanitize(char *_str, const char *_initial_str) {
 	}
 
 	memcpy(buffer, _initial_str, initial_length);
+
+	for (int i = 0; i < initial_length; i++) {
+		if (!isprint(buffer[i])) {
+			buffer[i] = ' ';
+		}
+	}
 
 	trim_whitespace(buffer, 16);
 
