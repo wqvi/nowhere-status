@@ -8,6 +8,8 @@ struct player_info {
 	char artist[16];
 };
 
+#define APOSTROPHE "\u2019"
+
 #ifdef DEBUG
 void sstrr(char *_str, size_t _len) {
 #else
@@ -17,6 +19,19 @@ static void sstrr(char *_str, size_t _len) {
 	for (int i = 0; i < _len - 1; i++) {
 		char c = _str[i + 1];
 		_str[i + 1] = b;
+		b = c;
+	}
+}
+
+#ifdef DEBUG
+void sstrl(char *_str, size_t _len) {
+#else
+static void sstrl(char *_str, size_t _len) {
+#endif
+	char b = _str[_len];
+	for (int i = _len; i > 0; i--) {
+		char c = _str[i - 1];
+		_str[i - 1] = b;
 		b = c;
 	}
 }
@@ -73,9 +88,17 @@ static int sanitize(char *_str, const char *_initial_str) {
 		memcpy(_str, _initial_str, initial_length);
 
 		for (int i = 0; i < initial_length; i++) {
-			if (!isprint(_str[i])) {
-				_str[i] = ' ';
+			if (strncmp(_str + i, APOSTROPHE, 3) == 0) {
+				sstrl(_str + i, initial_length);
+				sstrl(_str + i, initial_length);
+				_str[i] = '\'';
+				continue;
 			}
+			if (isprint(_str[i])) {
+				continue;
+			}
+			
+			_str[i] = ' ';
 		}
 
 		trim_whitespace(_str, initial_length);
